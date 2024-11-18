@@ -19,11 +19,20 @@ app.use("/downloads", express.static(downloadsDir));
 
 // Query Params
 // url: string
+// title: string [default: "PDF"]
 // size: string [A3, A4, A5, Legal, Letter] [default: A4]
 // landscape: boolean [default: false]
 // scale: number [70 - 200]% [default: 100]
 // printBackground: boolean [default: true]
 // printHeaderFooter: boolean [default: false]
+// autoPrint: boolean [default: false]
+// adjustSinglePage: boolean [default: false]
+
+// margin: float [default: 0]
+// marginTop: float [default: 0]
+// marginRight: float [default: 0]
+// marginBottom: float [default: 0]
+// marginLeft: float [default: 0]
 app.use("/generate-pdf", generatePdfRoute);
 
 // handle 404 errors
