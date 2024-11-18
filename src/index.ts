@@ -15,6 +15,15 @@ const downloadsDir = join(__dirname, "downloads");
 app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(downloadsDir));
+
+
+// Query Params
+// url: string
+// size: string [A3, A4, A5, Legal, Letter] [default: A4]
+// landscape: boolean [default: false]
+// scale: number [70 - 200]% [default: 100]
+// printBackground: boolean [default: true]
+// printHeaderFooter: boolean [default: false]
 app.use("/generate-pdf", generatePdfRoute);
 
 // handle 404 errors
