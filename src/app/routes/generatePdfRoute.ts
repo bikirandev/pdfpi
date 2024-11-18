@@ -2,11 +2,11 @@ import { Request, Response, Router } from "express";
 import { join } from "path";
 import puppeteer from "puppeteer";
 
-const generatePdfRouter = Router();
+const generatePdfRoute = Router();
 
 const downloadsDir = join(__dirname, "downloads");
 
-generatePdfRouter.post(
+generatePdfRoute.post(
   "/",
   async (req: Request, res: Response): Promise<any> => {
     const { url, options } = req.body;
@@ -104,4 +104,4 @@ generatePdfRouter.post(
   }
 );
 
-export default generatePdfRouter;
+export default generatePdfRoute;
