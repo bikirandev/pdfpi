@@ -1,0 +1,19 @@
+{
+  "name": "7301n-web-to-pdf",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "repository": "https://github.com/bikirandev/7301N-Web-To-Pdf.git",
+  "author": "Bishojit <bishojit@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "nodemon": "^3.1.7",
+    "puppeteer": "^23.8.0"
+  }
+}
