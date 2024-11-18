@@ -7,7 +7,7 @@ import fs from "fs/promises";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-const port = 3001;
+const port = 7301;
 
 // Ensure downloads directory exists
 const downloadsDir = join(__dirname, "downloads");
@@ -76,6 +76,7 @@ app.post("/generate-pdf", async (req, res) => {
         bottom: options.margins.bottom + "px",
         left: options.margins.left + "px",
       },
+
       headerTemplate: options.showHeaderFooter
         ? `
         <div style="font-size: 10px; text-align: center; width: 100%;">
@@ -90,6 +91,7 @@ app.post("/generate-pdf", async (req, res) => {
         </div>
       `
         : "",
+
       preferCSSPageSize: true,
     });
 

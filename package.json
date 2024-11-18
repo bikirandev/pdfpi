@@ -1,9 +1,8 @@
 {
-  "name": "7301n-web-to-pdf",
+  "name": "7301n-api3-web-to-pdf",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
-  "repository": "https://github.com/bikirandev/7301N-Web-To-Pdf.git",
   "author": "Bishojit <bishojit@gmail.com>",
   "license": "MIT",
   "scripts": {
