@@ -1,8 +1,26 @@
+import { TQueryParams } from "../../types";
+
 type TObj = { [key: string]: any };
 
 const validatePDFQueryParams = (query: TObj) => {
   const errors: TObj = {};
-  const parsedQuery: TObj = {};
+
+  const parsedQuery: TQueryParams = {
+    url: "",
+    size: "A4",
+    title: "PDF",
+    landscape: false,
+    scale: 100,
+    printBackground: true,
+    printHeaderFooter: false,
+    autoPrint: false,
+    adjustSinglePage: false,
+    margin: 0,
+    marginTop: 0,
+    marginRight: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+  };
 
   // Validate and sanitize each parameter
   if (!query.url || typeof query.url !== "string") {
@@ -25,13 +43,11 @@ const validatePDFQueryParams = (query: TObj) => {
   parsedQuery.landscape =
     query.landscape !== undefined ? Boolean(query.landscape) : false;
 
-  if (query.scale === undefined) {
+  const scale = query.scale !== undefined ? Number(query.scale) : undefined;
+
+  if (scale === undefined) {
     parsedQuery.scale = 100; // Default
-  } else if (
-    typeof query.scale !== "number" ||
-    query.scale < 70 ||
-    query.scale > 150
-  ) {
+  } else if (query.scale < 70 || query.scale > 150) {
     errors.scale = "scale must be a number between 70 and 150";
   } else {
     parsedQuery.scale = query.scale;
@@ -81,15 +97,14 @@ const validatePDFQueryParams = (query: TObj) => {
   if (Object.keys(errors).length > 0) {
     return {
       error: true,
-      message: "Invalid query params",
-      details: errors,
+      message: errors,
     };
   }
 
   return {
     error: false,
     message: "Valid query params",
-    query: parsedQuery,
+    data: parsedQuery,
   };
 };
 
