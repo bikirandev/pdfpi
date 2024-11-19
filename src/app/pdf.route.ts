@@ -1,23 +1,26 @@
 import { Request, Response, Router } from "express";
 import { join } from "path";
 import puppeteer, { PDFOptions } from "puppeteer";
-import validatePDFQueryParams from "./generatePdf.validation";
-import downloadDir from "../../utils/downloadDir";
+import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
+import downloadDir from "../utils/downloadDir";
 
-const generatePdfRoute = Router();
+const PdfRoute = Router();
 
-generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
+// GET: /pdf/generate
+PdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
   //get query params
   const query = req.query;
 
   const validatedQuery = validatePDFQueryParams(query);
 
-  if (validatedQuery.error || validatedQuery.data === undefined) {
+  if (validatedQuery.error || !validatedQuery.data) {
     return res.json(validatedQuery).status(400);
   }
-
   const options = validatedQuery.data;
   const url = options.url;
+
+  console.log("options", options);
+  console.log("Generating PDF for URL:", url);
 
   let browser;
   try {
@@ -95,14 +98,13 @@ generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
     res.json({
       error: false,
       message: "PDF generated successfully",
-      pdfUrl: `/downloads/${options.title}.pdf`,
+      pdfUrl: `../downloads/${options.title}.pdf`,
     });
   } catch (error: any) {
     console.error("PDF generation error:", error);
     res.status(500).json({
       error: true,
-      message: error.message,
-      // message: "Failed to generate PDF",
+      message: `Failed to generate PDF. ${error.message}`,
     });
   } finally {
     if (browser) {
@@ -111,4 +113,4 @@ generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-export default generatePdfRoute;
+export default PdfRoute;

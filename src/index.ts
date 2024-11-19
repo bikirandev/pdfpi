@@ -2,7 +2,7 @@ import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
-import generatePdfRoute from "./modules/pdf/generatePdf.route";
+import PdfRoute from "./app/pdf.route";
 import downloadDir from "./utils/downloadDir";
 
 const app = express();
@@ -15,7 +15,7 @@ const port = 7301;
 app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(downloadDir()));
-app.use("/generate-pdf", generatePdfRoute);
+app.use("/pdf", PdfRoute);
 
 // handle 404 errors
 app.use((req: Request, res: Response, next: NextFunction): any =>

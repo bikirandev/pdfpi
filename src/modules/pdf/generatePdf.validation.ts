@@ -13,6 +13,7 @@ const validatePDFQueryParams = (query: TObj) => {
     parsedQuery.url = query.url;
   }
 
+  // Validate size
   const validSizes = ["A3", "A4", "A5", "Legal", "Letter"];
   if (!query.size) {
     parsedQuery.size = "A4"; // Default
@@ -22,13 +23,17 @@ const validatePDFQueryParams = (query: TObj) => {
     parsedQuery.size = query.size;
   }
 
+  // Fix title
   parsedQuery.title = query.title || "PDF";
 
+  // Fix orientation
   parsedQuery.landscape =
     query.landscape !== undefined ? Boolean(query.landscape) : false;
 
+  // Validate scale
   const scale = query.scale !== undefined ? Number(query.scale) : undefined;
 
+  // Validate scale
   if (scale === undefined) {
     parsedQuery.scale = 100; // Default
   } else if (query.scale < 70 || query.scale > 150) {
@@ -37,17 +42,21 @@ const validatePDFQueryParams = (query: TObj) => {
     parsedQuery.scale = query.scale;
   }
 
+  // Validate Background Options
   parsedQuery.printBackground =
     query.printBackground !== undefined ? Boolean(query.printBackground) : true;
 
+  // Validate Header/Footer Options
   parsedQuery.printHeaderFooter =
     query.printHeaderFooter !== undefined
       ? Boolean(query.printHeaderFooter)
       : false;
 
+  // Validate autoPrint and adjustSinglePage
   parsedQuery.autoPrint =
     query.autoPrint !== undefined ? Boolean(query.autoPrint) : false;
 
+  // Validate autoPrint and adjustSinglePage
   parsedQuery.adjustSinglePage =
     query.adjustSinglePage !== undefined
       ? Boolean(query.adjustSinglePage)

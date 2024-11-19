@@ -1,10 +1,10 @@
 import { join } from "path";
 import fs from "fs";
 
+
 const downloadDir = (): string => {
-  // Locate the 'app' folder at /src/app
-  const appDir = join(__dirname, "..", "app");
-  const downloadsDir = join(appDir, "downloads");
+  // Locate the 'app' folder at /downloads
+  const downloadsDir = join(__dirname, "../..", "downloads");
 
   // Ensure the 'downloads' directory exists
   if (!fs.existsSync(downloadsDir)) {
