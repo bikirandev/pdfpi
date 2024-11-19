@@ -56,7 +56,7 @@ generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
     );
 
     const timestamp = Date.now();
-    const pdfPath = join(downloadDir(), `webpage-${timestamp}.pdf`);
+    const pdfPath = join(downloadDir(), `${options.title}.pdf`);
 
     // Set PDF options
     const pdfOptions: PDFOptions = {
@@ -95,7 +95,7 @@ generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
     res.json({
       error: false,
       message: "PDF generated successfully",
-      pdfUrl: `/downloads/webpage-${timestamp}.pdf`,
+      pdfUrl: `/downloads/${options.title}.pdf`,
     });
   } catch (error: any) {
     console.error("PDF generation error:", error);

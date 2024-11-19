@@ -1,4 +1,5 @@
 import { PaperFormat } from "puppeteer";
+export type TObj = { [key: string]: any };
 
 export type TQueryParams = {
   url: string;

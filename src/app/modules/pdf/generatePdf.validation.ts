@@ -1,26 +1,10 @@
-import { TQueryParams } from "../../types";
-
-type TObj = { [key: string]: any };
+import { DEFAULT_QUERY } from "../../constants";
+import { TObj, TQueryParams } from "../../types";
 
 const validatePDFQueryParams = (query: TObj) => {
   const errors: TObj = {};
 
-  const parsedQuery: TQueryParams = {
-    url: "",
-    size: "A4",
-    title: "PDF",
-    landscape: false,
-    scale: 100,
-    printBackground: true,
-    printHeaderFooter: false,
-    autoPrint: false,
-    adjustSinglePage: false,
-    margin: 0,
-    marginTop: 0,
-    marginRight: 0,
-    marginBottom: 0,
-    marginLeft: 0,
-  };
+  const parsedQuery: TQueryParams = DEFAULT_QUERY;
 
   // Validate and sanitize each parameter
   if (!query.url || typeof query.url !== "string") {
