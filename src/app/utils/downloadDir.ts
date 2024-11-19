@@ -1,15 +1,17 @@
-// const downloadsDir = join(__dirname, "downloads");
-// return download dir and if doesn't exist create it
 import { join } from "path";
 import fs from "fs";
 
-const downloadDir = () => {
-  const downloadsDir = join(__dirname, "downloads");
+const downloadDir = (): string => {
+  // Locate the 'app' folder at /src/app
+  const appDir = join(__dirname, "..", "app");
+  const downloadsDir = join(appDir, "downloads");
+
+  // Ensure the 'downloads' directory exists
   if (!fs.existsSync(downloadsDir)) {
     fs.mkdirSync(downloadsDir, { recursive: true });
-
-    return downloadsDir;
   }
+
+  // Return the absolute path to the 'downloads' directory
   return downloadsDir;
 };
 

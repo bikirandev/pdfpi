@@ -4,18 +4,18 @@ import express, { NextFunction, Request, Response } from "express";
 import globalErrorHandler from "./app/middleware/globalErrorHandler";
 import notFound from "./app/middleware/notFound";
 import generatePdfRoute from "./app/modules/pdf/generatePdf.route";
-import validatePDFQueryParams from "./app/modules/pdf/generatePdf.validation";
+import downloadDir from "./app/utils/downloadDir";
 
 const app = express();
 const port = 7301;
 
 // Ensure downloads directory exists
-const downloadsDir = join(__dirname, "downloads");
+// const downloadsDir = join(__dirname, "downloads");
 // await fs.mkdir(downloadsDir, { recursive: true });
 
 app.use(cors());
 app.use(express.json());
-app.use("/downloads", express.static(downloadsDir));
+app.use("/downloads", express.static(downloadDir()));
 app.use("/generate-pdf", generatePdfRoute);
 
 // handle 404 errors

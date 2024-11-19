@@ -1,26 +1,23 @@
 import { Request, Response, Router } from "express";
 import { join } from "path";
-import puppeteer from "puppeteer";
+import puppeteer, { PDFOptions } from "puppeteer";
 import validatePDFQueryParams from "./generatePdf.validation";
+import downloadDir from "../../utils/downloadDir";
 
 const generatePdfRoute = Router();
 
-const downloadsDir = join(__dirname, "downloads");
-
 generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
-  const { options, url } = req.body;
   //get query params
   const query = req.query;
 
   const validatedQuery = validatePDFQueryParams(query);
-  if (validatedQuery.error) {
-    return res.json({ error: "Invalid query params" }).status(400);
-  }
-  console.log(validatedQuery, "validatedQuery");
 
-  if (!url) {
-    return res.json({ error: "URL is required" }).status(400);
+  if (validatedQuery.error || validatedQuery.data === undefined) {
+    return res.json(validatedQuery).status(400);
   }
+
+  const options = validatedQuery.data;
+  const url = options.url;
 
   let browser;
   try {
@@ -59,49 +56,53 @@ generatePdfRoute.get("/", async (req: Request, res: Response): Promise<any> => {
     );
 
     const timestamp = Date.now();
-    const pdfPath = join(downloadsDir, `webpage-${timestamp}.pdf`);
+    const pdfPath = join(downloadDir(), `webpage-${timestamp}.pdf`);
 
-    await page.pdf({
+    // Set PDF options
+    const pdfOptions: PDFOptions = {
       path: pdfPath,
-      format: options.format,
-      landscape: options.orientation === "landscape",
-      scale: options.scale,
+      format: options.size,
+      landscape: options.landscape,
+      scale: options.scale / 100,
       printBackground: options.printBackground,
-      displayHeaderFooter: options.showHeaderFooter,
+      displayHeaderFooter: options.printHeaderFooter,
       margin: {
-        top: options.margins.top + "px",
-        right: options.margins.right + "px",
-        bottom: options.margins.bottom + "px",
-        left: options.margins.left + "px",
+        top: options.marginTop + "px",
+        right: options.marginRight + "px",
+        bottom: options.marginBottom + "px",
+        left: options.marginLeft + "px",
       },
-
-      headerTemplate: options.showHeaderFooter
+      headerTemplate: options.printHeaderFooter
         ? `
           <div style="font-size: 10px; text-align: center; width: 100%;">
             <span class="date"></span> - <span class="url"></span>
           </div>
         `
         : "",
-      footerTemplate: options.showHeaderFooter
+      footerTemplate: options.printHeaderFooter
         ? `
           <div style="font-size: 10px; text-align: center; width: 100%;">
             <span class="pageNumber"></span> / <span class="totalPages"></span>
           </div>
-        `
+         `
         : "",
-
       preferCSSPageSize: true,
-    });
+    };
 
+    await page.pdf(pdfOptions);
+
+    // Return the PDF URL
     res.json({
-      success: true,
+      error: false,
+      message: "PDF generated successfully",
       pdfUrl: `/downloads/webpage-${timestamp}.pdf`,
     });
   } catch (error: any) {
     console.error("PDF generation error:", error);
     res.status(500).json({
-      error: "Failed to generate PDF",
-      details: error.message,
+      error: true,
+      message: error.message,
+      // message: "Failed to generate PDF",
     });
   } finally {
     if (browser) {
