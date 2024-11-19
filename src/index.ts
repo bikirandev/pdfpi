@@ -1,10 +1,9 @@
-import { join } from "path";
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
-import globalErrorHandler from "./app/middleware/globalErrorHandler";
-import notFound from "./app/middleware/notFound";
-import generatePdfRoute from "./app/modules/pdf/generatePdf.route";
-import downloadDir from "./app/utils/downloadDir";
+import globalErrorHandler from "./middleware/globalErrorHandler";
+import notFound from "./middleware/notFound";
+import generatePdfRoute from "./modules/pdf/generatePdf.route";
+import downloadDir from "./utils/downloadDir";
 
 const app = express();
 const port = 7301;
