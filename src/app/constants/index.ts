@@ -3,7 +3,7 @@ import { TQueryParams } from "../types";
 export const DEFAULT_QUERY: TQueryParams = {
   url: "",
   size: "A4",
-  title: "PDF",
+  title: "print",
   landscape: false,
   scale: 100,
   printBackground: true,
