@@ -4,8 +4,8 @@ import express, { NextFunction, Request, Response } from "express";
 import { WebSocketServer } from "ws";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
-import PdfRoute from "./app/pdf.route";
-import ChannelRoute from "./app/channel.route";
+import pdfRoute from "./app/pdf.route";
+import channelRoute from "./app/channel.route";
 import downloadDir from "./utils/downloadDir";
 import { ChannelManager } from "./utils/channelManager";
 
@@ -24,8 +24,8 @@ const channelManager = new ChannelManager();
 app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(downloadDir()));
-app.use("/pdf", PdfRoute);
-app.use("/channel", ChannelRoute);
+app.use("/pdf", pdfRoute);
+app.use("/channel", channelRoute);
 
 // handle 404 errors
 app.use((req: Request, res: Response, next: NextFunction): any =>

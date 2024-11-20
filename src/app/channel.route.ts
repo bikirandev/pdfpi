@@ -4,12 +4,12 @@ import puppeteer, { PDFOptions } from "puppeteer";
 import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
 import downloadDir from "../utils/downloadDir";
 
-const ChannelRoute = Router();
+const channelRoute = Router();
 
 // GET: /channel/create
-ChannelRoute.get("/create", async (req: Request, res: Response): Promise<any> => {
+channelRoute.get("/create", async (req: Request, res: Response): Promise<any> => {
     
 
 });
 
-export default ChannelRoute;
+export default channelRoute;

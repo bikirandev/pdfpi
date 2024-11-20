@@ -4,10 +4,10 @@ import puppeteer, { PDFOptions } from "puppeteer";
 import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
 import downloadDir from "../utils/downloadDir";
 
-const PdfRoute = Router();
+const pdfRoute = Router();
 
 // GET: /pdf/generate
-PdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
+pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
   //get query params
   const query = req.query;
 
@@ -113,4 +113,4 @@ PdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-export default PdfRoute;
+export default pdfRoute;
