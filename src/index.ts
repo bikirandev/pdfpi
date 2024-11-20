@@ -4,8 +4,8 @@ import express, { NextFunction, Request, Response } from "express";
 import { WebSocketServer } from "ws";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
-import pdfRoute from "./app/pdf.route";
-import channelRoute from "./app/channel.route";
+import pdfRoute from "./routes/pdf.route";
+import channelRoute from "./routes/channel.route";
 import downloadDir from "./utils/downloadDir";
 import { ChannelManager } from "./utils/channelManager";
 
@@ -37,7 +37,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction): any =>
   globalErrorHandler(err, req, res, next)
 );
 
-
 // WebSocket connection handling
 wss.on('connection', (ws: WebSocketServer) => {
   console.log('New client connected');
@@ -57,9 +56,6 @@ wss.on('connection', (ws: WebSocketServer) => {
   });
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
-
-export default app;
