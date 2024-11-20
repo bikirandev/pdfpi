@@ -1,6 +1,6 @@
 import { TObj, TQueryParams } from "../../types";
 
- const DEFAULT_QUERY: TQueryParams = {
+const DEFAULT_QUERY: TQueryParams = {
   url: "",
   size: "A4",
   title: "print",
@@ -43,8 +43,7 @@ const validatePDFQueryParams = (query: TObj) => {
   parsedQuery.title = query.title || "PDF";
 
   // Fix orientation
-  parsedQuery.landscape =
-    query.landscape !== undefined ? Boolean(query.landscape) : false;
+  parsedQuery.landscape = query.landscape === "true";
 
   // Validate scale
   const scale = query.scale !== undefined ? Number(query.scale) : undefined;
@@ -59,24 +58,16 @@ const validatePDFQueryParams = (query: TObj) => {
   }
 
   // Validate Background Options
-  parsedQuery.printBackground =
-    query.printBackground !== undefined ? Boolean(query.printBackground) : true;
+  parsedQuery.printBackground = query.printBackground === "true";
 
   // Validate Header/Footer Options
-  parsedQuery.printHeaderFooter =
-    query.printHeaderFooter !== undefined
-      ? Boolean(query.printHeaderFooter)
-      : false;
+  parsedQuery.printHeaderFooter = query.printHeaderFooter == "true";
 
   // Validate autoPrint and adjustSinglePage
-  parsedQuery.autoPrint =
-    query.autoPrint !== undefined ? Boolean(query.autoPrint) : false;
+  parsedQuery.autoPrint = query.autoPrint === "true";
 
   // Validate autoPrint and adjustSinglePage
-  parsedQuery.adjustSinglePage =
-    query.adjustSinglePage !== undefined
-      ? Boolean(query.adjustSinglePage)
-      : false;
+  parsedQuery.adjustSinglePage = query.adjustSinglePage === "true";
 
   // Handle margin and dependent sides
   const margin = query.margin !== undefined ? Number(query.margin) : undefined;

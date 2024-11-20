@@ -3,35 +3,62 @@ import { join } from "path";
 import puppeteer, { PDFOptions } from "puppeteer";
 import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
 import downloadDir from "../utils/downloadDir";
-import { browserManager } from "../modules/browser/browserManager";
 
 const pdfRoute = Router();
 
 // GET: /pdf/generate
 pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
+  //get query params
+  const query = req.query;
+
+  const validatedQuery = validatePDFQueryParams(query);
+
+  if (validatedQuery.error || !validatedQuery.data) {
+    return res.json(validatedQuery).status(400);
+  }
+  const options = validatedQuery.data;
+  const url = options.url;
+
+  console.log("options", options);
+  console.log("Generating PDF for URL:", url);
+
+  let browser;
   try {
-    //get query params
-    const query = req.query;
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--disable-gpu",
+      ],
+    });
 
-    // Validate query params
-    const validatedQuery = validatePDFQueryParams(query);
-    if (validatedQuery.error || !validatedQuery.data) {
-      return res.json(validatedQuery).status(400);
-    }
-    const options = validatedQuery.data;
-    const url = options.url;
+    const page = await browser.newPage();
 
-    // Initialize browser
-    await browserManager.initialize();
+    // Set viewport for better rendering
+    await page.setViewport({
+      width: 1920,
+      height: 1080,
+      deviceScaleFactor: 1,
+    });
 
-    // Create a new session
-    var id = "100";
-    const page = await browserManager.createSession(url, id);
+    // Add timeout and error handling for navigation
+    await page.goto(url, {
+      waitUntil: ["networkidle0", "domcontentloaded"],
+      timeout: 30000,
+    });
 
-    // Delay for 2 seconds to allow page to load
-    await setTimeout(() => {}, 2000);
+    // Wait for any lazy-loaded content
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        })
+    );
 
-    // const timestamp = Date.now();
+    const timestamp = Date.now();
     const pdfPath = join(downloadDir(), `${options.title}.pdf`);
 
     // Set PDF options
@@ -80,11 +107,9 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
       message: `Failed to generate PDF. ${error.message}`,
     });
   } finally {
-    // if (browser) {
-    //   await browser.close();
-    // }
-
-    console.log("Closing session");
+    if (browser) {
+      await browser.close();
+    }
   }
 });
 
