@@ -2,6 +2,7 @@ import { TObj, TQueryParams } from "../../types";
 
 const DEFAULT_QUERY: TQueryParams = {
   url: "",
+  id: "100",
   size: "A4",
   title: "print",
   landscape: false,
@@ -27,6 +28,13 @@ const validatePDFQueryParams = (query: TObj) => {
     errors.url = "url is required and must be a string";
   } else {
     parsedQuery.url = query.url;
+  }
+
+  // Validate id
+  if (!query.id || typeof query.id !== "string") {
+    errors.id = "id is required and must be a string";
+  } else {
+    parsedQuery.id = query.id;
   }
 
   // Validate size

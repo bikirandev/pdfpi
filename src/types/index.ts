@@ -3,6 +3,7 @@ export type TObj = { [key: string]: any };
 
 export type TQueryParams = {
   url: string;
+  id: string;
   size: PaperFormat;
   title: string;
   landscape: boolean;

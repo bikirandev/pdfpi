@@ -1,9 +1,9 @@
-import { Request, Response, Router } from "express";
 import { join } from "path";
-import puppeteer, { PDFOptions } from "puppeteer";
-import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
-import downloadDir from "../utils/downloadDir";
+import { PDFOptions } from "puppeteer";
 import { browserManager } from "../modules/browser/browserManager";
+import { Request, Response, Router } from "express";
+import downloadDir from "../utils/downloadDir";
+import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
 
 const pdfRoute = Router();
 
@@ -25,7 +25,7 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
     await browserManager.initialize();
 
     // Create a new session
-    var id = "100";
+    var id = options.id;
     const page = await browserManager.createSession(url, id);
 
     // Delay for 2 seconds to allow page to load
