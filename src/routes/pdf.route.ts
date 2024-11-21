@@ -31,8 +31,20 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
     // Delay for 2 seconds to allow page to load
     await setTimeout(() => {}, 2000);
 
-    // const timestamp = Date.now();
-    const pdfPath = join(downloadDir(), `${options.title}.pdf`);
+    // set website title as title
+    const pageTitle = await page.title();
+    // split title by space and join with underscore and expressions
+    const refactoredTitle = pageTitle
+      .split(" ")
+      .join("-")
+      .replace(/[^a-zA-Z]/g, ""); // Remove everything except alphabetic characters
+
+    // Add a timestamp in seconds for uniqueness
+    const timestampInSeconds = Math.floor(Date.now() / 1000); // Get current time in seconds
+
+    const title = `${refactoredTitle}-${timestampInSeconds}`;
+
+    const pdfPath = join(downloadDir(), `${title}.pdf`);
 
     // Set PDF options
     const pdfOptions: PDFOptions = {
@@ -71,7 +83,7 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
     res.json({
       error: false,
       message: "PDF generated successfully",
-      pdfUrl: `../downloads/${options.title}.pdf`,
+      pdfUrl: `../downloads/${title}.pdf`,
     });
   } catch (error: any) {
     console.error("PDF generation error:", error);
