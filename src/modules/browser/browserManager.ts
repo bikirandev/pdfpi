@@ -49,7 +49,7 @@ class BrowserManager {
     // Set viewport for better rendering
     await page.setViewport({
       width: 1920,
-      height: 1080,
+      height: 2080,
       deviceScaleFactor: 1,
     });
 
