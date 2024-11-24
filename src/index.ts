@@ -8,6 +8,7 @@ import pdfRoute from "./routes/pdf.route";
 import channelRoute from "./routes/channel.route";
 import downloadDir from "./utils/downloadDir";
 import { ChannelManager } from "./utils/channelManager";
+import eventRoute from "./routes/events.route";
 
 const app = express();
 const port = 7301;
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/downloads", express.static(downloadDir()));
 app.use("/pdf", pdfRoute);
 app.use("/channel", channelRoute);
+app.use("/events", eventRoute);
 
 // handle 404 errors
 app.use((req: Request, res: Response, next: NextFunction): any =>
@@ -38,20 +40,20 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction): any =>
 );
 
 // WebSocket connection handling
-wss.on('connection', (ws: WebSocketServer) => {
-  console.log('New client connected');
+wss.on("connection", (ws: WebSocketServer) => {
+  console.log("New client connected");
 
-  ws.on('message', (message: string) => {
+  ws.on("message", (message: string) => {
     const data = JSON.parse(message);
-    
-    if (data.type === 'subscribe') {
+
+    if (data.type === "subscribe") {
       channelManager.subscribeClient(ws, data.channelId);
-    } else if (data.type === 'unsubscribe') {
+    } else if (data.type === "unsubscribe") {
       channelManager.unsubscribeClient(ws, data.channelId);
     }
   });
 
-  ws.on('close', () => {
+  ws.on("close", () => {
     channelManager.removeClient(ws);
   });
 });
