@@ -9,6 +9,7 @@ import channelRoute from "./routes/channel.route";
 import downloadDir from "./utils/downloadDir";
 import { ChannelManager } from "./utils/channelManager";
 import eventRoute from "./routes/events.route";
+import scrapRoute from "./routes/scrap.route";
 
 const app = express();
 const port = 7301;
@@ -26,6 +27,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/downloads", express.static(downloadDir()));
 app.use("/pdf", pdfRoute);
+app.use("/scrap", scrapRoute);
 app.use("/channel", channelRoute);
 app.use("/events", eventRoute);
 
