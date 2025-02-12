@@ -3,31 +3,39 @@ import puppeteer, { Browser, Page } from "puppeteer";
 class BrowserManager {
   private browser: Browser | null;
   private sessions: Map<string, Page>;
+  private headless: boolean;
 
-  constructor() {
+  constructor(headless: boolean = true) {
     this.browser = null;
     this.sessions = new Map();
+    this.headless = headless;
   }
 
-  async initialize(): Promise<void> {
+  async initialize(headless?: boolean): Promise<void> {
     console.log("Initializing browser");
 
-    // Check if browser is already initialized
     if (this.browser) {
       console.log("Browser already initialized");
       return;
     }
 
-    this.browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
-      ],
-    });
+    this.headless = headless !== undefined ? headless : this.headless;
+
+    try {
+      this.browser = await puppeteer.launch({
+        headless: this.headless,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-accelerated-2d-canvas",
+          "--disable-gpu",
+        ],
+      });
+    } catch (error) {
+      console.error("Failed to launch browser:", error);
+      throw new Error("Failed to launch Puppeteer browser");
+    }
   }
 
   async createSession(url: string, sessionId: string): Promise<Page> {
@@ -37,14 +45,31 @@ class BrowserManager {
 
     if (this.sessions.has(sessionId)) {
       console.log("Session already exists", sessionId);
-      var p = this.sessions.get(sessionId);
-      if (p) {
-        return p;
+      const existingPage = this.sessions.get(sessionId);
+      if (existingPage) {
+        return existingPage;
       }
     }
 
     console.log("Creating session", sessionId);
-    const page = await this.browser.newPage();
+
+    let page: Page;
+
+    try {
+      // Enforce a timeout for creating a new page
+      page = await Promise.race([
+        this.browser.newPage(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Timed out creating a new page")),
+            10000
+          )
+        ),
+      ]);
+    } catch (error) {
+      console.error("Error creating a new page:", error);
+      throw new Error("Failed to create a new browser tab");
+    }
 
     // Set viewport for better rendering
     await page.setViewport({
@@ -53,11 +78,16 @@ class BrowserManager {
       deviceScaleFactor: 1,
     });
 
-    await page.goto(url, {
-      waitUntil: ["networkidle0", "domcontentloaded"],
-      timeout: 30000,
-    });
-    console.log("Page created");
+    try {
+      await page.goto(url, {
+        waitUntil: ["networkidle0", "domcontentloaded"],
+        timeout: 30000,
+      });
+      console.log("Page created successfully");
+    } catch (error) {
+      console.error("Error navigating to URL:", error);
+      throw new Error("Failed to load the page");
+    }
 
     this.sessions.set(sessionId, page);
     return page;
@@ -69,7 +99,7 @@ class BrowserManager {
   }
 
   getSession(sessionId: string): Page | undefined {
-    console.log("Getting session");
+    console.log("Getting session", sessionId);
     return this.sessions.get(sessionId);
   }
 
