@@ -24,10 +24,15 @@ const channelManager = new ChannelManager();
 // await fs.mkdir(downloadsDir, { recursive: true });
 
 app.use(cors());
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "10mb",
+  })
+);
+
 app.use("/downloads", express.static(downloadDir()));
 app.use("/pdf", pdfRoute);
-app.use("/scrap", scrapRoute);
+app.use("/api/scraped-data", scrapRoute);
 app.use("/channel", channelRoute);
 app.use("/events", eventRoute);
 
