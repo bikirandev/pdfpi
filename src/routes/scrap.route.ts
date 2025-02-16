@@ -1,43 +1,60 @@
 import { Router, Request, Response } from "express";
-import { browserManager } from "../modules/browser/browserManager";
+import fs from "fs";
+import path from "path";
 
 const scrapRoute = Router();
+const DATA_DIR = path.join(__dirname, "../../data"); // Ensure it's outside `src`
 
-// GET: /html/fetch
-scrapRoute.get("/fetch", async (req: Request, res: Response): Promise<any> => {
+// Ensure the `data` folder exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Store scraped data
+scrapRoute.post("/", async (req: Request, res: Response): Promise<any> => {
   try {
-    // Get query params
-    const url = req.query.url as string;
-    const id = (req.query.id as string) || "100"; // Assign a default ID if not provided
+    const { html, url } = req.body;
 
-    if (!url) {
-      return res
-        .status(400)
-        .json({ error: true, message: "URL parameter is required" });
+    if (!html || !url) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Initialize browser
-    await browserManager.initialize();
+    // Generate unique filename based on timestamp
+    const filename = `${Date.now()}-${url.replace(/[^a-zA-Z0-9]/g, "_")}.json`;
+    const filePath = path.join(DATA_DIR, filename);
 
-    // Create a new session
-    const page = await browserManager.createSession(url, id);
+    // Prepare data to save
+    const dataToSave = {
+      url,
+      scrapedAt: new Date().toISOString(),
+      html,
+    };
 
-    // Wait for page to load completely
-    await page.waitForSelector("body", { timeout: 5000 });
+    // Write data to JSON file
+    fs.writeFile(filePath, JSON.stringify(dataToSave, null, 2), (err) => {
+      if (err) {
+        console.error("Error saving data:", err);
+        return res.status(500).json({ message: "Failed to store data" });
+      }
 
-    // Get page content
-    const htmlContent = await page.content();
-
-    // Return the HTML response
-    res.status(200).send(htmlContent);
-  } catch (error: any) {
-    console.error("Error fetching HTML:", error);
+      console.log(`Scraped data saved at: ${filePath}`);
+      res.json({
+        error: false,
+        message: "Data stored successfully",
+        data: {
+          url,
+          scrapedAt: new Date().toISOString(),
+          html,
+        },
+      });
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
     res.status(500).json({
       error: true,
-      message: `Failed to fetch HTML. ${error.message}`,
+      message: "Server error",
+      stack: error,
     });
-  } finally {
-    console.log("Closing session");
   }
 });
 
