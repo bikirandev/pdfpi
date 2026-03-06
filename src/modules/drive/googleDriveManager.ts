@@ -33,6 +33,7 @@ async function uploadToGoogleDrive(
       body: Readable.from(fileBuffer),
     },
     fields: "id, name, webViewLink, webContentLink",
+    supportsAllDrives: true,
   });
 
   return response.data;
