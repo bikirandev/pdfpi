@@ -597,6 +597,7 @@
         <ul class="nav-links">
             <li><a href="/">Home</a></li>
             <li><a href="/playground.html" style="color:var(--accent)">Playground</a></li>
+            <li><a href="/setup-drive.html">Drive Setup</a></li>
         </ul>
     </nav>
 
@@ -658,9 +659,9 @@
                             <input type="checkbox" id="pgHF" />
                             <label for="pgHF">Header &amp; Footer</label>
                         </div>
-                        <div class="toggle">
-                            <input type="checkbox" id="pgSave" />
-                            <label for="pgSave">Save to Google Drive</label>
+                        <div class="toggle" id="saveToggleWrap">
+                            <input type="checkbox" id="pgSave" disabled />
+                            <label for="pgSave" id="pgSaveLabel" style="opacity:.5">Save to Google Drive</label>
                         </div>
                     </div>
 
@@ -757,6 +758,23 @@
         // ── State ──
         const history = [];
         let authEnabled = false;
+        let driveConfigured = false;
+
+        // Check if Google Drive is configured
+        fetch('/api/drive-status').then(r => r.json()).then(d => {
+            driveConfigured = d.configured;
+            const cb = document.getElementById('pgSave');
+            const lbl = document.getElementById('pgSaveLabel');
+            if (driveConfigured) {
+                cb.disabled = false;
+                lbl.style.opacity = '1';
+                lbl.textContent = 'Save to Google Drive';
+            } else {
+                cb.disabled = true;
+                lbl.style.opacity = '.5';
+                lbl.innerHTML = 'Save to Google Drive <span style="font-size:.7rem;color:var(--text-muted)">(not configured)</span>';
+            }
+        }).catch(() => { });
 
         // Check if API key auth is enabled
         fetch('/api/auth-status').then(r => r.json()).then(d => {
@@ -914,12 +932,15 @@
                     els.content().style.display = 'block';
                     let driveHtml = '';
                     if (data.drive) {
+                        const driveViewUrl = data.drive.viewUrl || (data.drive.id ? 'https://drive.google.com/file/d/' + data.drive.id + '/view' : '');
+                        const driveDownloadUrl = data.drive.downloadUrl || (data.drive.id ? 'https://drive.google.com/uc?id=' + data.drive.id + '&export=download' : '');
                         driveHtml = `
               <div style="margin-top:.75rem;padding:.75rem 1rem;background:#3fb95015;border:1px solid #3fb95033;border-radius:var(--radius);font-size:.85rem;color:var(--green);">
                 &#9729; Saved to Google Drive
-                <div style="margin-top:.4rem;display:flex;gap:.75rem;flex-wrap:wrap;">
-                  ${data.drive.viewUrl ? '<a href=\"' + data.drive.viewUrl + '\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);font-size:.82rem;\">View on Drive</a>' : ''}
-                  ${data.drive.downloadUrl ? '<a href=\"' + data.drive.downloadUrl + '\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);font-size:.82rem;\">Download from Drive</a>' : ''}
+                <div style="margin-top:.4rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
+                  ${driveViewUrl ? '<a href="' + driveViewUrl + '" target="_blank" rel="noopener" style="color:var(--accent);font-size:.82rem;">&#128196; View on Drive</a>' : ''}
+                  ${driveDownloadUrl ? '<a href="' + driveDownloadUrl + '" target="_blank" rel="noopener" style="color:var(--accent);font-size:.82rem;">&#11015; Download from Drive</a>' : ''}
+                  ${data.drive.id ? '<span style="font-size:.72rem;color:var(--text-muted);font-family:var(--mono);">ID: ' + data.drive.id + '</span>' : ''}
                 </div>
               </div>`;
                     }
