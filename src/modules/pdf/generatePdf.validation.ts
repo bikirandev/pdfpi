@@ -3,9 +3,9 @@ import { TObj, TQueryParams } from "../../types";
 /** Default values applied when a query parameter is missing or not provided. */
 const DEFAULT_QUERY: TQueryParams = {
   url: "",
-  id: "100",
+  id: "",
   size: "A4",
-  title: "print",
+  title: "PDF",
   landscape: false,
   scale: 100,
   printBackground: true,
@@ -34,7 +34,16 @@ const validatePDFQueryParams = (query: TObj) => {
   if (!query.url || typeof query.url !== "string") {
     errors.url = "url is required and must be a string";
   } else {
-    parsedQuery.url = query.url;
+    try {
+      const parsed = new URL(query.url);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        errors.url = "url must use http or https protocol";
+      } else {
+        parsedQuery.url = query.url;
+      }
+    } catch {
+      errors.url = "url must be a valid URL";
+    }
   }
 
   // --- id (required) ---
@@ -71,7 +80,7 @@ const validatePDFQueryParams = (query: TObj) => {
   }
 
   // --- background / header-footer / behaviour flags ---
-  parsedQuery.printBackground = query.printBackground === "true";
+  parsedQuery.printBackground = query.printBackground !== "false";
   parsedQuery.printHeaderFooter = query.printHeaderFooter === "true";
   parsedQuery.autoPrint = query.autoPrint === "true";
   parsedQuery.adjustSinglePage = query.adjustSinglePage === "true";

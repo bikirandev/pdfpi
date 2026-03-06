@@ -1,5 +1,4 @@
-
-
+#!/bin/bash
 
 # Create a new domain configuration file
 cp setup-nginx-domain-demo-win.conf /etc/nginx/sites-available/api3.bikiran.win

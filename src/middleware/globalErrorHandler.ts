@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import config from "../config";
 
 /**
  * Express global error-handling middleware.
@@ -13,13 +14,12 @@ const globalErrorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  const statusCode = 500;
   const message = err.message || "An unexpected error occurred";
 
-  return res.status(statusCode).json({
-    success: false,
+  return res.status(500).json({
+    error: true,
     message,
-    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    stack: config.nodeEnv === "development" ? err.stack : undefined,
   });
 };
 

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { timingSafeEqual } from "crypto";
 import config from "../config";
 
 /**
@@ -15,7 +16,11 @@ const apiKeyAuth = (req: Request, res: Response, next: NextFunction): any => {
   const provided =
     (req.headers["x-api-key"] as string) || (req.query.apiKey as string);
 
-  if (!provided || provided !== key) {
+  if (
+    !provided ||
+    provided.length !== key.length ||
+    !timingSafeEqual(Buffer.from(provided), Buffer.from(key))
+  ) {
     return res.status(401).json({
       error: true,
       message: "Unauthorized – invalid or missing API key.",

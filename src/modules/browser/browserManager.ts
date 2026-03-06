@@ -66,8 +66,8 @@ class BrowserManager {
    * exists, the existing page is returned immediately.
    *
    * @throws If the browser has not been initialised.
-   * @throws If the page cannot be created within 10 seconds.
-   * @throws If the page fails to navigate to `url` within 30 seconds.
+   * @throws If the page cannot be created within the configured timeout.
+   * @throws If the page fails to navigate to `url` within the configured timeout.
    */
   async createSession(url: string, sessionId: string): Promise<Page> {
     if (!this.browser) {

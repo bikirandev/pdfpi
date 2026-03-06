@@ -1,9 +1,26 @@
 {
   "name": "7301n-api3-web-to-pdf",
   "version": "1.1.0",
-  "main": "index.js",
+  "description": "Self-hosted REST API that converts any public web page into a PDF using headless Chromium (Puppeteer).",
+  "main": "dist/index.js",
   "author": "Bishojit <bishojit@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bikirandev/7301N-API3-Web-To-Pdf.git"
+  },
+  "keywords": [
+    "pdf",
+    "web-to-pdf",
+    "puppeteer",
+    "headless-chrome",
+    "api",
+    "express",
+    "html-to-pdf"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "npx ts-node-dev --respawn --transpile-only src/index.ts",
@@ -20,7 +37,6 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/express-rate-limit": "^6.0.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }

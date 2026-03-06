@@ -22,6 +22,7 @@ PDF file using a headless Chromium browser (Puppeteer).
 7. [Environment variables](#environment-variables)
 8. [Project structure](#project-structure)
 9. [Known limitations](#known-limitations)
+10. [License](#license)
 
 ---
 
@@ -311,3 +312,9 @@ environment variables:
 - **Single browser process** – all PDF requests share one Puppeteer
   browser instance. Under high concurrency, requests will queue behind
   each other.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

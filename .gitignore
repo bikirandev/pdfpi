@@ -1,5 +1,9 @@
 node_modules
+dist
 downloads
-/dist
 data
 .env
+.env.*
+*.log
+.DS_Store
+Thumbs.db

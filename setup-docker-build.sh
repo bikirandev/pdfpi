@@ -1,4 +1,4 @@
-# Bash
+#!/bin/bash
 
 # Git pull
 git pull

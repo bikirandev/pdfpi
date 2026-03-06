@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-# Use the official Node.js 20 image as the base image
+# Use the official Node.js 22 image as the base image
 FROM node:22 AS build
 
 # Set the working directory
@@ -17,7 +17,7 @@ COPY . .
 # Install Puppeteer and download the required Chrome browser
 RUN npx puppeteer browsers install chrome
 
-# Build the Next.js application
+# Build the TypeScript application
 RUN yarn build
 
 # Stage 2: Run the application
@@ -59,7 +59,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Expose the port the app runs on (overridable via PORT env)
-EXPOSE ${PORT:-7301}
+EXPOSE 7301
 
 # Runtime environment defaults
 ENV NODE_ENV=production
