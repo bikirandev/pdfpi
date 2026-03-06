@@ -593,11 +593,19 @@
                             </p>
                         </div>
                         <div class="step">
-                            <h3>Create &amp; Share a Drive Folder</h3>
-                            <p>In <a href="https://drive.google.com/" target="_blank" rel="noopener noreferrer">Google
-                                    Drive</a>, create a folder. Right-click &rarr; <strong>Share</strong> &rarr; paste
-                                the service account email (from Step 3) &rarr; set role to <strong>Editor</strong>. Copy
-                                the <strong>Folder ID</strong> from the URL.</p>
+                            <h3>Create a Shared Drive &amp; Folder</h3>
+                            <p><strong>Important:</strong> Service accounts cannot store files in regular "My
+                                Drive" folders (no storage quota). You must use a <strong>Shared Drive</strong>.</p>
+                            <p style="margin-top:.3rem">In <a href="https://drive.google.com/" target="_blank"
+                                    rel="noopener noreferrer">Google Drive</a>, go to <strong>Shared
+                                    drives</strong> (left sidebar) &rarr; create or select one. Create a folder
+                                inside. Click <strong>Manage members</strong> on the Shared Drive &rarr;
+                                paste the service account email (from Step 3) &rarr; set role to <strong>Content
+                                    manager</strong>. Open the folder and copy the <strong>Folder ID</strong> from the
+                                URL.</p>
+                            <p style="margin-top:.3rem;font-size:.78rem;color:var(--text-muted)">URL
+                                format: <code>https://drive.google.com/drive/folders/<strong>FOLDER_ID</strong></code>
+                            </p>
                         </div>
                         <div class="step">
                             <h3>Complete the Form Below</h3>
@@ -640,11 +648,12 @@
 
                     <!-- Folder ID -->
                     <div class="field">
-                        <label for="folderId">Google Drive Folder ID <span style="color:var(--red)">*</span></label>
+                        <label for="folderId">Shared Drive Folder ID <span style="color:var(--red)">*</span></label>
                         <input id="folderId" type="text" placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ" />
                         <div class="field-hint">
                             The folder ID from
                             <code>https://drive.google.com/drive/folders/<strong>FOLDER_ID</strong></code>
+                            — must be inside a <strong>Shared Drive</strong>
                         </div>
                     </div>
 
@@ -817,9 +826,8 @@
                     showStatus('error', data.message);
                     testPassed = false;
                 } else {
-                    const folderName = data.folder ? data.folder.name : 'Unknown';
                     showStatus('success',
-                        'Connection successful! Folder: <strong>' + folderName + '</strong>');
+                        'Connection successful! Folder ID: <strong>' + folderId + '</strong>');
                     testPassed = true;
                     saveBtn.disabled = false;
                 }

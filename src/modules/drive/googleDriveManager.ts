@@ -51,7 +51,7 @@ function resolveCredentials(): {
   if (fileCfg) {
     const auth = new google.auth.GoogleAuth({
       credentials: fileCfg.serviceAccountKey,
-      scopes: ["https://www.googleapis.com/auth/drive.file"],
+      scopes: ["https://www.googleapis.com/auth/drive"],
     });
     return { auth, folderId: fileCfg.folderId };
   }
@@ -73,7 +73,7 @@ function resolveCredentials(): {
 
   const auth = new google.auth.GoogleAuth({
     keyFile: keyPath,
-    scopes: ["https://www.googleapis.com/auth/drive.file"],
+    scopes: ["https://www.googleapis.com/auth/drive"],
   });
   return { auth, folderId };
 }

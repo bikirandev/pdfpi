@@ -63,15 +63,24 @@ automatically save generated PDFs to a Google Drive folder using a
 
 ---
 
-## Step 5 – Create & Share a Drive Folder
+## Step 5 – Create a Shared Drive & Share a Folder
+
+> **Important:** Service accounts do **not** have storage quota and
+> cannot own files in regular "My Drive" folders. You **must** use a
+> **Shared Drive** (available in Google Workspace). Files uploaded to a
+> Shared Drive are owned by the drive itself, so no individual quota is
+> needed.
 
 1. Open [Google Drive](https://drive.google.com/).
-2. Create a new folder (e.g. `Web-to-PDF Uploads`).
-3. Right-click the folder → **Share**.
-4. Paste the **service account email** (from Step 3, e.g.
+2. In the left sidebar, click **Shared drives**.
+3. Create a new Shared Drive (or select an existing one).
+4. Create a folder inside it (e.g. `Web-to-PDF Uploads`).
+5. Click **Manage members** on the Shared Drive (or right-click the
+   folder → **Share**).
+6. Paste the **service account email** (from Step 3, e.g.
    `web-to-pdf-uploader@your-project.iam.gserviceaccount.com`).
-5. Set the role to **Editor** → **Send** (uncheck "Notify people" if prompted).
-6. Open the folder — copy the **Folder ID** from the URL:
+7. Set the role to **Content manager** → **Send**.
+8. Open the folder — copy the **Folder ID** from the URL:
    ```
    https://drive.google.com/drive/folders/FOLDER_ID_IS_HERE
                                            ^^^^^^^^^^^^^^^^^^^
@@ -126,13 +135,14 @@ before clicking Generate.
 
 ## Troubleshooting
 
-| Problem                                             | Solution                                                                           |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH is not configured` | Set the env var and restart the server.                                            |
-| `GOOGLE_DRIVE_FOLDER_ID is not configured`          | Set the env var and restart the server.                                            |
-| `403 Forbidden` / permission error                  | Make sure the Drive folder is shared with the service account email as **Editor**. |
-| `404 File not found`                                | Double-check the Folder ID from the URL.                                           |
-| `Google Drive API has not been used`                | Enable the Drive API in Cloud Console (Step 2).                                    |
+| Problem                                             | Solution                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH is not configured` | Set the env var and restart the server.                                                            |
+| `GOOGLE_DRIVE_FOLDER_ID is not configured`          | Set the env var and restart the server.                                                            |
+| `403 Forbidden` / storage quota error               | Service accounts can't own files — use a **Shared Drive** folder (not a regular "My Drive" folder). |
+| `403 Forbidden` / permission error                  | Make sure the Shared Drive is shared with the service account email as **Content manager**.         |
+| `404 File not found`                                | Double-check the Folder ID from the URL.                                                           |
+| `Google Drive API has not been used`                | Enable the Drive API in Cloud Console (Step 2).                                                    |
 
 ---
 
@@ -140,6 +150,6 @@ before clicking Generate.
 
 - The JSON key file grants full access to the service account — protect it
   like a password.
-- The `drive.file` scope is used, so the service account can only access
-  files it creates or that are explicitly shared with it.
+- The `drive` scope is used with `supportsAllDrives` to allow uploads to
+  Shared Drive folders.
 - Add `data/service-account-key.json` to `.gitignore`.
