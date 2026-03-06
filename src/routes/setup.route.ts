@@ -58,9 +58,7 @@ setupRoute.post(
 
       const drive = google.drive({ version: "v3", auth });
 
-      // Quick write/delete test: create a tiny temp file then remove it.
-      // We skip files.get() on the folder because `drive.file` scope only
-      // allows access to files created/opened by the app, not pre-existing folders.
+      // Quick write test: create a tiny temp file in the target folder.
       const testFile = await drive.files.create({
         requestBody: {
           name: ".pdfapi-connection-test",
@@ -75,11 +73,17 @@ setupRoute.post(
         supportsAllDrives: true,
       });
 
+      // Best-effort cleanup — delete may fail on Shared Drives due to
+      // propagation delay or permission level; that's fine.
       if (testFile.data.id) {
-        await drive.files.delete({
-          fileId: testFile.data.id,
-          supportsAllDrives: true,
-        });
+        try {
+          await drive.files.delete({
+            fileId: testFile.data.id,
+            supportsAllDrives: true,
+          });
+        } catch {
+          // Ignore cleanup failure
+        }
       }
 
       return res.json({
