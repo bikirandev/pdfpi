@@ -1,15 +1,21 @@
 import { Request, Response, Router } from "express";
-import { join } from "path";
-import puppeteer, { PDFOptions } from "puppeteer";
-import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
-import downloadDir from "../utils/downloadDir";
 
 const channelRoute = Router();
 
-// GET: /channel/create
-channelRoute.get("/create", async (req: Request, res: Response): Promise<any> => {
-    
-
+/**
+ * GET /channel/create
+ *
+ * Placeholder endpoint – channel creation is handled via WebSocket
+ * (subscribe/unsubscribe messages).  This REST endpoint is reserved for
+ * future use and currently returns a 501 Not Implemented response.
+ */
+channelRoute.get("/create", (_req: Request, res: Response): any => {
+  return res.status(501).json({
+    error: true,
+    message:
+      "Channel creation via REST is not yet implemented. " +
+      "Use the WebSocket interface to subscribe/unsubscribe channels.",
+  });
 });
 
 export default channelRoute;
