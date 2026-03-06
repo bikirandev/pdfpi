@@ -7,8 +7,10 @@ import apiKeyAuth from "./middleware/apiKeyAuth";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
 import pdfRoute from "./routes/pdf.route";
+import setupRoute from "./routes/setup.route";
 import downloadDir from "./utils/downloadDir";
 import publicDir from "./utils/publicDir";
+import { isDriveSetupDone } from "./modules/drive/driveConfigManager";
 
 const app = express();
 
@@ -61,6 +63,29 @@ app.use(express.static(publicDir()));
 app.get("/api/auth-status", (_req: Request, res: Response) => {
   res.json({ authEnabled: !!config.apiKey });
 });
+
+// ── Drive status (so the setup UI can check if already configured) ──
+app.get("/api/drive-status", (_req: Request, res: Response) => {
+  res.json({ configured: isDriveSetupDone() });
+});
+
+// ── Setup page guard: block setup-drive.html when already configured ──
+app.get("/setup-drive.html", (req: Request, res: Response, next: NextFunction): any => {
+  if (isDriveSetupDone()) {
+    return res.status(403).send(
+      '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Setup Locked</title>'
+      + '<style>body{background:#0d1117;color:#e6edf3;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;}'
+      + '.box{max-width:400px}.icon{font-size:3rem;margin-bottom:1rem}h2{margin-bottom:.5rem}p{color:#8b949e}a{color:#58a6ff}</style></head>'
+      + '<body><div class="box"><div class="icon">&#128274;</div><h2>Setup Locked</h2>'
+      + '<p>Google Drive is already configured. This page is no longer accessible.</p>'
+      + '<p style="margin-top:1rem"><a href="/">Back to Home</a></p></div></body></html>',
+    );
+  }
+  next();
+});
+
+// Setup API routes (blocked after configuration is saved)
+app.use("/api/setup", setupRoute);
 
 // API routes (protected by API key when configured)
 app.use("/pdf", apiKeyAuth, pdfRoute);

@@ -72,6 +72,8 @@ Additional features:
 | `src/modules/browser/browserManager.ts`     | Singleton Puppeteer browser; session lifecycle |
 | `src/modules/pdf/generatePdf.validation.ts` | Query-string validation & normalisation        |
 | `src/modules/drive/googleDriveManager.ts`   | Google Drive upload via Service Account        |
+| `src/modules/drive/driveConfigManager.ts`   | File-based Drive config persistence            |
+| `src/routes/setup.route.ts`                 | `POST /api/setup/drive` setup endpoints        |
 | `src/utils/downloadDir.ts`                  | Resolves & ensures the `downloads/` directory  |
 | `src/routes/pdf.route.ts`                   | `GET /pdf/generate` handler                    |
 | `src/middleware/globalErrorHandler.ts`      | Catches unhandled errors; returns JSON         |
@@ -215,23 +217,23 @@ GET /downloads/MyPage-1712345678.pdf
 
 All parameters are passed as URL query strings to `GET /pdf/generate`.
 
-| Parameter           | Type                        | Default      | Description                                                               |
-| ------------------- | --------------------------- | ------------ | ------------------------------------------------------------------------- |
-| `url`               | `string`                    | **required** | Full URL of the web page to convert                                       |
-| `id`                | `string`                    | **required** | Unique session identifier                                                 |
-| `size`              | `A3\|A4\|A5\|Legal\|Letter` | `A4`         | Paper format                                                              |
-| `landscape`         | `"true"\|"false"`           | `false`      | Landscape orientation                                                     |
-| `scale`             | `number` (70–150)           | `100`        | Rendering scale percentage                                                |
-| `printBackground`   | `"true"\|"false"`           | `true`       | Include CSS backgrounds                                                   |
-| `printHeaderFooter` | `"true"\|"false"`           | `false`      | Show date/URL header and page-number footer                               |
-| `margin`            | `number` ≥ 0                | `0`          | Global margin (px) applied to all sides                                   |
-| `marginTop`         | `number` ≥ 0                | `margin`     | Top margin override (px)                                                  |
-| `marginRight`       | `number` ≥ 0                | `margin`     | Right margin override (px)                                                |
-| `marginBottom`      | `number` ≥ 0                | `margin`     | Bottom margin override (px)                                               |
-| `marginLeft`        | `number` ≥ 0                | `margin`     | Left margin override (px)                                                 |
-| `save`              | `"true"\|"false"`           | `false`      | Upload the PDF to Google Drive (see [setup guide](GOOGLE_DRIVE_SETUP.md)) |
-| `autoPrint`         | `"true"\|"false"`           | `false`      | _(reserved)_ Auto-print trigger                                           |
-| `adjustSinglePage`  | `"true"\|"false"`           | `false`      | _(reserved)_ Single-page fit                                              |
+| Parameter           | Type                        | Default      | Description                                                                    |
+| ------------------- | --------------------------- | ------------ | ------------------------------------------------------------------------------ |
+| `url`               | `string`                    | **required** | Full URL of the web page to convert                                            |
+| `id`                | `string`                    | **required** | Unique session identifier                                                      |
+| `size`              | `A3\|A4\|A5\|Legal\|Letter` | `A4`         | Paper format                                                                   |
+| `landscape`         | `"true"\|"false"`           | `false`      | Landscape orientation                                                          |
+| `scale`             | `number` (70–150)           | `100`        | Rendering scale percentage                                                     |
+| `printBackground`   | `"true"\|"false"`           | `true`       | Include CSS backgrounds                                                        |
+| `printHeaderFooter` | `"true"\|"false"`           | `false`      | Show date/URL header and page-number footer                                    |
+| `margin`            | `number` ≥ 0                | `0`          | Global margin (px) applied to all sides                                        |
+| `marginTop`         | `number` ≥ 0                | `margin`     | Top margin override (px)                                                       |
+| `marginRight`       | `number` ≥ 0                | `margin`     | Right margin override (px)                                                     |
+| `marginBottom`      | `number` ≥ 0                | `margin`     | Bottom margin override (px)                                                    |
+| `marginLeft`        | `number` ≥ 0                | `margin`     | Left margin override (px)                                                      |
+| `save`              | `"true"\|"false"`           | `false`      | Upload the PDF to Google Drive (see [setup guide](docs/GOOGLE_DRIVE_SETUP.md)) |
+| `autoPrint`         | `"true"\|"false"`           | `false`      | _(reserved)_ Auto-print trigger                                                |
+| `adjustSinglePage`  | `"true"\|"false"`           | `false`      | _(reserved)_ Single-page fit                                                   |
 
 **Example**
 
@@ -255,25 +257,26 @@ Copy `.env.example` to `.env` and adjust:
 cp .env.example .env
 ```
 
-| Variable                          | Default      | Description                                                                               |
-| --------------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
-| `NODE_ENV`                        | `production` | Set to `development` to include error stack traces in API responses                       |
-| `PORT`                            | `7301`       | Port the HTTP server listens on                                                           |
-| `HOST`                            | `0.0.0.0`    | Network interface to bind to                                                              |
-| `API_KEY`                         | _(empty)_    | API key for authentication. Leave empty to disable auth (open access)                     |
-| `CORS_ORIGINS`                    | `*`          | Comma-separated allowed origins, or `*` for all                                           |
-| `RATE_LIMIT_MAX`                  | `20`         | Max requests per IP per window                                                            |
-| `RATE_LIMIT_WINDOW_MIN`           | `1`          | Rate-limit window duration in minutes                                                     |
-| `VIEWPORT_WIDTH`                  | `1920`       | Puppeteer viewport width (px)                                                             |
-| `VIEWPORT_HEIGHT`                 | `2080`       | Puppeteer viewport height (px)                                                            |
-| `PAGE_LOAD_TIMEOUT`               | `30000`      | Max time (ms) to wait for page navigation                                                 |
-| `PAGE_CREATE_TIMEOUT`             | `10000`      | Max time (ms) to wait for new browser tab creation                                        |
-| `POST_LOAD_DELAY`                 | `2000`       | Delay (ms) after page load before PDF generation                                          |
-| `HEADLESS`                        | `true`       | Run Puppeteer in headless mode                                                            |
-| `PUPPETEER_EXECUTABLE_PATH`       | _(empty)_    | Custom Chromium path (set automatically in Docker Alpine)                                 |
-| `JSON_BODY_LIMIT`                 | `10mb`       | Max JSON request body size                                                                |
-| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` | _(empty)_    | Path to a Google Service Account JSON key file (see [setup guide](GOOGLE_DRIVE_SETUP.md)) |
-| `GOOGLE_DRIVE_FOLDER_ID`          | _(empty)_    | Target Google Drive folder ID for PDF uploads                                             |
+| Variable                          | Default             | Description                                                                           |
+| --------------------------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `NODE_ENV`                        | `production`        | Set to `development` to include error stack traces in API responses                   |
+| `PORT`                            | `7301`              | Port the HTTP server listens on                                                       |
+| `HOST`                            | `0.0.0.0`           | Network interface to bind to                                                          |
+| `API_KEY`                         | _(empty)_           | API key for authentication. Leave empty to disable auth (open access)                 |
+| `CORS_ORIGINS`                    | `*`                 | Comma-separated allowed origins, or `*` for all                                       |
+| `RATE_LIMIT_MAX`                  | `20`                | Max requests per IP per window                                                        |
+| `RATE_LIMIT_WINDOW_MIN`           | `1`                 | Rate-limit window duration in minutes                                                 |
+| `VIEWPORT_WIDTH`                  | `1920`              | Puppeteer viewport width (px)                                                         |
+| `VIEWPORT_HEIGHT`                 | `2080`              | Puppeteer viewport height (px)                                                        |
+| `PAGE_LOAD_TIMEOUT`               | `30000`             | Max time (ms) to wait for page navigation                                             |
+| `PAGE_CREATE_TIMEOUT`             | `10000`             | Max time (ms) to wait for new browser tab creation                                    |
+| `POST_LOAD_DELAY`                 | `2000`              | Delay (ms) after page load before PDF generation                                      |
+| `HEADLESS`                        | `true`              | Run Puppeteer in headless mode                                                        |
+| `PUPPETEER_EXECUTABLE_PATH`       | _(empty)_           | Custom Chromium path (set automatically in Docker Alpine)                             |
+| `JSON_BODY_LIMIT`                 | `10mb`              | Max JSON request body size                                                            |
+| `CONFIG_DIR`                      | `/home/node/.pdfpi` | Directory for persisted config files (Drive setup). Automatically created at runtime. |
+| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` | _(empty)_           | Path to a Google Service Account JSON key file (fallback; prefer Setup UI)            |
+| `GOOGLE_DRIVE_FOLDER_ID`          | _(empty)_           | Target Google Drive folder ID for PDF uploads (fallback; prefer Setup UI)             |
 
 ### Authentication
 
@@ -297,8 +300,13 @@ is enabled and will prompt for the API key when needed.
 ├── tsconfig.json
 ├── setup-nginx-build.sh              # Nginx activation script
 ├── setup-nginx-domain-demo-win.conf  # Sample Nginx vhost config
-├── GOOGLE_DRIVE_SETUP.md             # Google Drive integration guide
+├── docs/
+│   └── GOOGLE_DRIVE_SETUP.md         # Google Drive manual setup guide
 ├── downloads/                        # Generated PDFs (git-ignored)
+├── public/
+│   ├── index.html                    # Landing page
+│   ├── playground.html               # PDF generation playground
+│   └── setup-drive.html              # Google Drive setup wizard (locked after setup)
 └── src/
     ├── index.ts                      # Application entry point
     ├── config.ts                     # Centralised env-based configuration
@@ -310,11 +318,13 @@ is enabled and will prompt for the API key when needed.
     │   ├── browser/
     │   │   └── browserManager.ts     # Puppeteer singleton
     │   ├── drive/
+    │   │   ├── driveConfigManager.ts  # File-based Drive config read/write
     │   │   └── googleDriveManager.ts  # Google Drive upload helper
     │   └── pdf/
     │       └── generatePdf.validation.ts
     ├── routes/
-    │   └── pdf.route.ts
+    │   ├── pdf.route.ts
+    │   └── setup.route.ts            # Drive setup API (auto-locks)
     ├── types/
     │   └── index.ts
     └── utils/
@@ -342,6 +352,28 @@ environment variables:
 - **Single browser process** – all PDF requests share one Puppeteer
   browser instance. Under high concurrency, requests will queue behind
   each other.
+
+---
+
+## Google Drive Setup
+
+There are two ways to configure Google Drive uploads:
+
+### Option A – Setup UI (recommended)
+
+Open `/setup-drive.html` in your browser. The wizard walks you through
+creating a service account, sharing a Drive folder, and saving the
+configuration. The config is persisted to `CONFIG_DIR` (default
+`/home/node/.pdfpi/drive-config.json`). **After saving, the setup page
+is permanently locked for public access.**
+
+### Option B – Environment variables
+
+Set `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` and `GOOGLE_DRIVE_FOLDER_ID` in
+your `.env` file. See the [manual guide](docs/GOOGLE_DRIVE_SETUP.md)
+for step-by-step instructions.
+
+The Setup UI config takes priority over environment variables.
 
 ---
 

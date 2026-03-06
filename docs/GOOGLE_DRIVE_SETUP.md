@@ -4,6 +4,11 @@ This guide walks you through configuring the **7301N Web-to-PDF API** to
 automatically save generated PDFs to a Google Drive folder using a
 **Service Account** (no user-login required, fully server-side).
 
+> **Recommended**: Use the built-in **Setup UI** at `/setup-drive.html`
+> instead of manual configuration. It automates Steps 6–7 below and saves
+> the config to `/home/node/.pdfpi/drive-config.json`. The setup page
+> locks itself after successful configuration.
+
 ---
 
 ## Prerequisites

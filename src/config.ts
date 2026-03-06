@@ -54,6 +54,9 @@ const config = {
   /** Max JSON body size */
   jsonBodyLimit: envStr("JSON_BODY_LIMIT", "10mb"),
 
+  /** Directory for persisted configuration files (Drive setup, etc.) */
+  configDir: envStr("CONFIG_DIR", "/home/node/.pdfpi"),
+
   /** Path to the Google Service Account JSON key file */
   googleServiceAccountKeyPath: envStr("GOOGLE_SERVICE_ACCOUNT_KEY_PATH", ""),
   /** Google Drive folder ID where PDFs are uploaded */
