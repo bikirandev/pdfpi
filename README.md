@@ -122,12 +122,12 @@ docker build -t web-to-pdf .
 docker run -p 7301:7301 web-to-pdf
 ```
 
-The `Dockerfile` uses a two-stage build:
+The `Dockerfile` uses a two-stage build on **Node 24 LTS Alpine**:
 
-1. **Build stage** – installs all dependencies, downloads Chromium, and
-   compiles TypeScript.
-2. **Runtime stage** – copies only `dist/`, `node_modules/`, and the
-   Puppeteer Chromium cache into a slim `node:22-slim` image.
+1. **Build stage** – installs dependencies and compiles TypeScript
+   (Puppeteer's bundled Chromium download is skipped).
+2. **Runtime stage** – installs system Chromium via `apk`, copies
+   `dist/` and `node_modules/` into a minimal Alpine image.
 
 ### Nginx reverse-proxy
 
@@ -246,6 +246,7 @@ cp .env.example .env
 | `PAGE_CREATE_TIMEOUT`   | `10000`      | Max time (ms) to wait for new browser tab creation                    |
 | `POST_LOAD_DELAY`       | `2000`       | Delay (ms) after page load before PDF generation                      |
 | `HEADLESS`              | `true`       | Run Puppeteer in headless mode                                        |
+| `PUPPETEER_EXECUTABLE_PATH` | _(empty)_ | Custom Chromium path (set automatically in Docker Alpine)          |
 | `JSON_BODY_LIMIT`       | `10mb`       | Max JSON request body size                                            |
 
 ### Authentication

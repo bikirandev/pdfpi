@@ -46,6 +46,7 @@ class BrowserManager {
     try {
       this.browser = await puppeteer.launch({
         headless: this.headless,
+        executablePath: config.chromiumPath || undefined,
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",

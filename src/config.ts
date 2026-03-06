@@ -48,6 +48,8 @@ const config = {
   postLoadDelay: envInt("POST_LOAD_DELAY", 2000),
   /** Run browser in headless mode */
   headless: envBool("HEADLESS", true),
+  /** Custom Chromium executable path (e.g. /usr/bin/chromium for Alpine Docker) */
+  chromiumPath: envStr("PUPPETEER_EXECUTABLE_PATH", ""),
 
   /** Max JSON body size */
   jsonBodyLimit: envStr("JSON_BODY_LIMIT", "10mb"),

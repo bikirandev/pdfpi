@@ -1,31 +1,39 @@
 # Stage 1: Build the application
-# Use the official Node.js 25 image as the base image
-FROM node:25 AS build
+# Node 24 LTS on Alpine for minimal vulnerability surface
+FROM node:24-alpine AS build
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
-# Install dependencies
-RUN yarn install --legacy-peer-deps
+# Skip Puppeteer's bundled Chromium download — Alpine uses system chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Copy the rest of the application code
+RUN yarn install --frozen-lockfile
+
 COPY . .
-
-# Install Puppeteer and download the required Chrome browser
-RUN npx puppeteer browsers install chrome
 
 # Build the TypeScript application
 RUN yarn build
 
 # Stage 2: Run the application
-# Use a smaller Node.js runtime image for the final stage
-FROM node:25-slim AS runtime
+FROM node:24-alpine AS runtime
 
-# Set the working directory
 WORKDIR /app
+
+# Install system Chromium and required dependencies
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-emoji
+
+# Tell Puppeteer to use system Chromium instead of bundled download
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Copy only the necessary files from the build stage
 COPY --from=build /app/package.json /app/yarn.lock ./
@@ -33,32 +41,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 COPY --from=build /app/node_modules ./node_modules
 
-# Ensure Puppeteer cache is included in the final image
-COPY --from=build /root/.cache/puppeteer /root/.cache/puppeteer
-
-# Install Chromium dependencies
-RUN apt-get update && apt-get install -y \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxext6 \
-    libxi6 \
-    libxtst6 \
-    libcups2 \
-    libxrandr2 \
-    libasound2 \
-    libpangocairo-1.0-0 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libepoxy0 \
-    libgbm1 \
-    libgtk-3-0 \
-    libdrm2 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Expose the port the app runs on (overridable via PORT env)
+# Expose the port the app runs on
 EXPOSE 7301
 
 # Runtime environment defaults
