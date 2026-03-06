@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Playground – 7301N</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2230;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb33;
+            --accent-hover: #79b8ff;
+            --green: #3fb950;
+            --purple: #bc8cff;
+            --yellow: #e3b341;
+            --red: #f85149;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+            --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(13, 17, 23, .85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .nav-brand span.badge {
+            background: var(--accent);
+            color: #000;
+            font-size: .65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: .04em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: .9rem;
+            transition: color .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* ── LAYOUT ── */
+        .playground {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .pg-header {
+            margin-bottom: 2rem;
+        }
+
+        .pg-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            margin-bottom: .4rem;
+        }
+
+        .pg-header h1 .accent {
+            color: var(--accent);
+        }
+
+        .pg-header p {
+            color: var(--text-muted);
+            font-size: .95rem;
+            max-width: 600px;
+        }
+
+        .pg-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 860px) {
+            .pg-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── PANEL ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            padding: .85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .panel-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .panel-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .panel-dots .d1 {
+            background: var(--red);
+        }
+
+        .panel-dots .d2 {
+            background: var(--yellow);
+        }
+
+        .panel-dots .d3 {
+            background: var(--green);
+        }
+
+        .panel-title {
+            font-size: .82rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .panel-body {
+            padding: 1.25rem;
+        }
+
+        /* ── FORM ── */
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        .field label {
+            display: block;
+            font-size: .75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: .3rem;
+        }
+
+        .field input[type="text"],
+        .field input[type="url"],
+        .field input[type="number"],
+        .field select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            padding: .55rem .8rem;
+            font-size: .88rem;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--accent);
+        }
+
+        .field select option {
+            background: var(--bg);
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+        }
+
+        .field-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: .75rem;
+        }
+
+        .field-hint {
+            font-size: .72rem;
+            color: var(--text-muted);
+            margin-top: .2rem;
+        }
+
+        /* ── TOGGLES ── */
+        .toggles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem;
+            margin-bottom: 1rem;
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .toggle input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .toggle label {
+            font-size: .85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ── SECTION DIVIDER ── */
+        .section-label {
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--text-muted);
+            margin: 1.25rem 0 .6rem;
+            padding-bottom: .4rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .6rem 1.3rem;
+            border-radius: var(--radius);
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px #58a6ff44;
+        }
+
+        .btn-primary:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: .75rem;
+            margin-top: .5rem;
+        }
+
+        /* ── GENERATED URL ── */
+        .url-preview {
+            margin-top: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .75rem 1rem;
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--purple);
+            word-break: break-all;
+            line-height: 1.6;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .url-preview .method {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .url-preview .param-key {
+            color: var(--text-muted);
+        }
+
+        .url-preview .param-val {
+            color: var(--green);
+        }
+
+        /* ── RESULT PANEL ── */
+        .result-area {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 2rem;
+            gap: .75rem;
+        }
+
+        .result-placeholder .icon {
+            font-size: 2.5rem;
+            opacity: .4;
+        }
+
+        .result-placeholder p {
+            font-size: .88rem;
+            max-width: 280px;
+        }
+
+        .result-status {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-size: .88rem;
+            display: none;
+        }
+
+        .result-status.loading {
+            display: block;
+            background: #e3b34115;
+            border: 1px solid #e3b34133;
+            color: var(--yellow);
+        }
+
+        .result-status.success {
+            display: block;
+            background: #3fb95015;
+            border: 1px solid #3fb95033;
+            color: var(--green);
+        }
+
+        .result-status.error {
+            display: block;
+            background: #f8514915;
+            border: 1px solid #f8514933;
+            color: var(--red);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: .75rem;
+            margin-top: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .result-actions a,
+        .result-actions button {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .5rem 1rem;
+            border-radius: var(--radius);
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .2s;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-muted);
+        }
+
+        .result-actions a:hover,
+        .result-actions button:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .result-actions .btn-open {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-color: #58a6ff55;
+        }
+
+        .result-actions .btn-open:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* ── PDF EMBED ── */
+        .pdf-embed {
+            margin-top: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .pdf-embed iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* ── HISTORY ── */
+        .history-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+            margin-top: .75rem;
+        }
+
+        .history-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: .5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .6rem .85rem;
+            font-size: .82rem;
+            transition: border-color .2s;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent);
+        }
+
+        .history-url {
+            font-family: var(--mono);
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-url span {
+            color: var(--text-muted);
+            font-size: .75rem;
+        }
+
+        .history-badge {
+            font-size: .7rem;
+            font-weight: 700;
+            background: #3fb95022;
+            color: var(--green);
+            border: 1px solid #3fb95044;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
+        }
+
+        .empty-history {
+            color: var(--text-muted);
+            font-size: .82rem;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        /* ── SPINNER ── */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--yellow);
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: .85rem;
+            margin-top: 2rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <a class="nav-brand" href="/">
+            7301N
+            <span class="badge">API</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/playground.html" style="color:var(--accent)">Playground</a></li>
+        </ul>
+    </nav>
+
+    <div class="playground">
+        <!-- HEADER -->
+        <div class="pg-header">
+            <h1>PDF <span class="accent">Playground</span></h1>
+            <p>Configure every parameter, preview the generated API URL, and download the result — all from one place.
+            </p>
+        </div>
+
+        <div class="pg-grid">
+            <!-- LEFT: Configuration Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-dots">
+                        <span class="d1"></span><span class="d2"></span><span class="d3"></span>
+                    </div>
+                    <span class="panel-title">Configuration</span>
+                </div>
+                <div class="panel-body">
+                    <!-- URL -->
+                    <div class="field">
+                        <label for="pgUrl">Page URL <span style="color:var(--red)">*</span></label>
+                        <input id="pgUrl" type="url" placeholder="https://example.com" value="https://example.com" />
+                    </div>
+
+                    <!-- Size + Scale -->
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="pgSize">Paper Size</label>
+                            <select id="pgSize">
+                                <option value="A3">A3</option>
+                                <option value="A4" selected>A4</option>
+                                <option value="A5">A5</option>
+                                <option value="Letter">Letter</option>
+                                <option value="Legal">Legal</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="pgScale">Scale (%)</label>
+                            <input id="pgScale" type="number" min="70" max="150" value="100" />
+                            <div class="field-hint">70 – 150</div>
+                        </div>
+                    </div>
+
+                    <!-- Toggles -->
+                    <div class="section-label">Options</div>
+                    <div class="toggles">
+                        <div class="toggle">
+                            <input type="checkbox" id="pgLandscape" />
+                            <label for="pgLandscape">Landscape</label>
+                        </div>
+                        <div class="toggle">
+                            <input type="checkbox" id="pgBg" checked />
+                            <label for="pgBg">Print Background</label>
+                        </div>
+                        <div class="toggle">
+                            <input type="checkbox" id="pgHF" />
+                            <label for="pgHF">Header &amp; Footer</label>
+                        </div>
+                    </div>
+
+                    <!-- Margins -->
+                    <div class="section-label">Margins (px)</div>
+                    <div class="field">
+                        <label for="pgMargin">Global Margin</label>
+                        <input id="pgMargin" type="number" min="0" value="0" placeholder="0" />
+                        <div class="field-hint">Applied to all sides unless overridden below</div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="pgMT">Top</label>
+                            <input id="pgMT" type="number" min="0" value="" placeholder="inherit" />
+                        </div>
+                        <div class="field">
+                            <label for="pgMR">Right</label>
+                            <input id="pgMR" type="number" min="0" value="" placeholder="inherit" />
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="pgMB">Bottom</label>
+                            <input id="pgMB" type="number" min="0" value="" placeholder="inherit" />
+                        </div>
+                        <div class="field">
+                            <label for="pgML">Left</label>
+                            <input id="pgML" type="number" min="0" value="" placeholder="inherit" />
+                        </div>
+                    </div>
+
+                    <!-- Generated URL preview -->
+                    <div class="section-label">Generated URL</div>
+                    <div class="url-preview" id="urlPreview"></div>
+
+                    <!-- Actions -->
+                    <div class="btn-row">
+                        <button class="btn btn-primary" id="genBtn" onclick="handleGenerate()">
+                            &#9654;&nbsp; Generate PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="handleReset()">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Result Panel -->
+            <div>
+                <div class="panel" style="margin-bottom:1.5rem">
+                    <div class="panel-header">
+                        <div class="panel-dots">
+                            <span class="d1"></span><span class="d2"></span><span class="d3"></span>
+                        </div>
+                        <span class="panel-title">Result</span>
+                    </div>
+                    <div class="panel-body result-area">
+                        <div class="result-status" id="resultStatus"></div>
+                        <div class="result-placeholder" id="resultPlaceholder">
+                            <div class="icon">&#128196;</div>
+                            <p>Configure your parameters and click <strong>Generate PDF</strong> to see the result here.
+                            </p>
+                        </div>
+                        <div id="resultContent" style="display:none"></div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">&#128337; Recent Generations</span>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="history-list" id="historyList">
+                            <li class="empty-history">No PDFs generated yet.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            <strong>7301N – Web-to-PDF API</strong> &nbsp;·&nbsp;
+            MIT License &nbsp;·&nbsp;
+            Built with <a href="https://expressjs.com/" target="_blank" rel="noopener noreferrer">Express</a>
+            &amp; <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer">Puppeteer</a>
+        </p>
+    </footer>
+
+    <script>
+        // ── State ──
+        const history = [];
+
+        // ── Elements ──
+        const els = {
+            url: () => document.getElementById('pgUrl'),
+            size: () => document.getElementById('pgSize'),
+            scale: () => document.getElementById('pgScale'),
+            landscape: () => document.getElementById('pgLandscape'),
+            bg: () => document.getElementById('pgBg'),
+            hf: () => document.getElementById('pgHF'),
+            margin: () => document.getElementById('pgMargin'),
+            mt: () => document.getElementById('pgMT'),
+            mr: () => document.getElementById('pgMR'),
+            mb: () => document.getElementById('pgMB'),
+            ml: () => document.getElementById('pgML'),
+            urlPreview: () => document.getElementById('urlPreview'),
+            genBtn: () => document.getElementById('genBtn'),
+            status: () => document.getElementById('resultStatus'),
+            placeholder: () => document.getElementById('resultPlaceholder'),
+            content: () => document.getElementById('resultContent'),
+            historyList: () => document.getElementById('historyList'),
+        };
+
+        // ── Build params ──
+        function getParams() {
+            const url = els.url().value.trim();
+            const id = 'pg-' + Date.now();
+            const size = els.size().value;
+            const scale = els.scale().value;
+            const land = els.landscape().checked;
+            const bg = els.bg().checked;
+            const hf = els.hf().checked;
+            const margin = els.margin().value;
+            const mt = els.mt().value;
+            const mr = els.mr().value;
+            const mb = els.mb().value;
+            const ml = els.ml().value;
+
+            const p = { url, id, size };
+
+            if (scale && scale !== '100') p.scale = scale;
+            if (land) p.landscape = 'true';
+            if (!bg) p.printBackground = 'false';
+            else p.printBackground = 'true';
+            if (hf) p.printHeaderFooter = 'true';
+            if (margin && margin !== '0') p.margin = margin;
+            if (mt !== '') p.marginTop = mt;
+            if (mr !== '') p.marginRight = mr;
+            if (mb !== '') p.marginBottom = mb;
+            if (ml !== '') p.marginLeft = ml;
+
+            return p;
+        }
+
+        // ── Build & display URL ──
+        function updatePreview() {
+            const p = getParams();
+            if (!p.url) {
+                els.urlPreview().innerHTML = '<span style="color:var(--text-muted)">Enter a URL above…</span>';
+                return;
+            }
+            const qs = new URLSearchParams(p).toString();
+            const full = '/pdf/generate?' + qs;
+
+            // Syntax-highlighted version
+            let html = '<span class="method">GET</span> /pdf/generate?';
+            const parts = qs.split('&');
+            html += parts.map(part => {
+                const [k, ...rest] = part.split('=');
+                const v = rest.join('=');
+                return '<span class="param-key">' + k + '</span>=<span class="param-val">' + decodeURIComponent(v) + '</span>';
+            }).join('&amp;');
+
+            els.urlPreview().innerHTML = html;
+        }
+
+        // Listen to all inputs for live URL preview
+        document.querySelectorAll('.panel-body input, .panel-body select').forEach(el => {
+            el.addEventListener('input', updatePreview);
+            el.addEventListener('change', updatePreview);
+        });
+        updatePreview();
+
+        // ── Generate ──
+        async function handleGenerate() {
+            const p = getParams();
+            if (!p.url) {
+                showStatus('error', 'Please enter a URL to convert.');
+                return;
+            }
+
+            const scale = parseInt(els.scale().value, 10);
+            if (scale && (scale < 70 || scale > 150)) {
+                showStatus('error', 'Scale must be between 70 and 150.');
+                return;
+            }
+
+            const btn = els.genBtn();
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>&nbsp; Generating…';
+
+            els.placeholder().style.display = 'none';
+            els.content().style.display = 'none';
+            showStatus('loading', 'Generating PDF — this may take a few seconds…');
+
+            const qs = new URLSearchParams(p).toString();
+            const apiUrl = '/pdf/generate?' + qs;
+
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+
+                if (data.error) {
+                    const msg = typeof data.message === 'string'
+                        ? data.message
+                        : JSON.stringify(data.message, null, 2);
+                    showStatus('error', msg);
+                } else {
+                    const pdfUrl = data.pdfUrl;
+                    showStatus('success', 'PDF generated successfully!');
+
+                    els.content().style.display = 'block';
+                    els.content().innerHTML = `
+            <div class="result-actions">
+              <a href="${pdfUrl}" target="_blank" rel="noopener" class="btn-open">&#128196; Open PDF</a>
+              <a href="${pdfUrl}" download class="btn-download">&#11015; Download</a>
+              <button onclick="copyUrl('${pdfUrl}', this)">&#128203; Copy URL</button>
+            </div>
+            <div class="pdf-embed">
+              <iframe src="${pdfUrl}" title="PDF preview"></iframe>
+            </div>
+          `;
+
+                    addHistory(p.url, pdfUrl);
+                }
+            } catch (err) {
+                showStatus('error', 'Network error — is the server running on this host?');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '&#9654;&nbsp; Generate PDF';
+            }
+        }
+
+        // ── Status display ──
+        function showStatus(type, message) {
+            const el = els.status();
+            el.className = 'result-status ' + type;
+            const icon = type === 'loading' ? '<span class="spinner"></span> '
+                : type === 'success' ? '&#10003; '
+                    : '&#10007; ';
+            el.innerHTML = icon + message;
+        }
+
+        // ── Copy URL ──
+        function copyUrl(url, btn) {
+            const fullUrl = window.location.origin + url;
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '&#10003; Copied!';
+                setTimeout(() => { btn.innerHTML = orig; }, 1500);
+            });
+        }
+
+        // ── History ──
+        function addHistory(pageUrl, pdfUrl) {
+            history.unshift({ pageUrl, pdfUrl, time: new Date() });
+            if (history.length > 10) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = els.historyList();
+            if (history.length === 0) {
+                list.innerHTML = '<li class="empty-history">No PDFs generated yet.</li>';
+                return;
+            }
+            list.innerHTML = history.map(h => {
+                const time = h.time.toLocaleTimeString();
+                const shortUrl = h.pageUrl.length > 40 ? h.pageUrl.slice(0, 40) + '…' : h.pageUrl;
+                return `
+          <li class="history-item" onclick="window.open('${h.pdfUrl}', '_blank')">
+            <div class="history-url">
+              ${shortUrl}
+              <span>&nbsp;· ${time}</span>
+            </div>
+            <span class="history-badge">PDF</span>
+          </li>
+        `;
+            }).join('');
+        }
+
+        // ── Reset ──
+        function handleReset() {
+            els.url().value = 'https://example.com';
+            els.size().value = 'A4';
+            els.scale().value = '100';
+            els.landscape().checked = false;
+            els.bg().checked = true;
+            els.hf().checked = false;
+            els.margin().value = '0';
+            els.mt().value = '';
+            els.mr().value = '';
+            els.mb().value = '';
+            els.ml().value = '';
+
+            els.status().className = 'result-status';
+            els.status().innerHTML = '';
+            els.content().style.display = 'none';
+            els.placeholder().style.display = 'flex';
+
+            updatePreview();
+        }
+    </script>
+</body>
+
+</html>
