@@ -658,6 +658,10 @@
                             <input type="checkbox" id="pgHF" />
                             <label for="pgHF">Header &amp; Footer</label>
                         </div>
+                        <div class="toggle">
+                            <input type="checkbox" id="pgSave" />
+                            <label for="pgSave">Save to Google Drive</label>
+                        </div>
                     </div>
 
                     <!-- Margins -->
@@ -780,6 +784,7 @@
             landscape: () => document.getElementById('pgLandscape'),
             bg: () => document.getElementById('pgBg'),
             hf: () => document.getElementById('pgHF'),
+            save: () => document.getElementById('pgSave'),
             margin: () => document.getElementById('pgMargin'),
             mt: () => document.getElementById('pgMT'),
             mr: () => document.getElementById('pgMR'),
@@ -802,6 +807,7 @@
             const land = els.landscape().checked;
             const bg = els.bg().checked;
             const hf = els.hf().checked;
+            const save = els.save().checked;
             const margin = els.margin().value;
             const mt = els.mt().value;
             const mr = els.mr().value;
@@ -815,6 +821,7 @@
             if (!bg) p.printBackground = 'false';
             else p.printBackground = 'true';
             if (hf) p.printHeaderFooter = 'true';
+            if (save) p.save = 'true';
             if (margin && margin !== '0') p.margin = margin;
             if (mt !== '') p.marginTop = mt;
             if (mr !== '') p.marginRight = mr;
@@ -905,12 +912,24 @@
                     showStatus('success', 'PDF generated successfully!');
 
                     els.content().style.display = 'block';
+                    let driveHtml = '';
+                    if (data.drive) {
+                        driveHtml = `
+              <div style="margin-top:.75rem;padding:.75rem 1rem;background:#3fb95015;border:1px solid #3fb95033;border-radius:var(--radius);font-size:.85rem;color:var(--green);">
+                &#9729; Saved to Google Drive
+                <div style="margin-top:.4rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+                  ${data.drive.viewUrl ? '<a href=\"' + data.drive.viewUrl + '\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);font-size:.82rem;\">View on Drive</a>' : ''}
+                  ${data.drive.downloadUrl ? '<a href=\"' + data.drive.downloadUrl + '\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);font-size:.82rem;\">Download from Drive</a>' : ''}
+                </div>
+              </div>`;
+                    }
                     els.content().innerHTML = `
             <div class="result-actions">
               <a href="${pdfUrl}" target="_blank" rel="noopener" class="btn-open">&#128196; Open PDF</a>
               <a href="${pdfUrl}" download class="btn-download">&#11015; Download</a>
               <button onclick="copyUrl('${pdfUrl}', this)">&#128203; Copy URL</button>
             </div>
+            ${driveHtml}
             <div class="pdf-embed">
               <iframe src="${pdfUrl}" title="PDF preview"></iframe>
             </div>
@@ -982,6 +1001,7 @@
             els.landscape().checked = false;
             els.bg().checked = true;
             els.hf().checked = false;
+            els.save().checked = false;
             els.margin().value = '0';
             els.mt().value = '';
             els.mr().value = '';

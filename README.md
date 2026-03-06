@@ -71,6 +71,7 @@ Additional features:
 | `src/middleware/apiKeyAuth.ts`              | API key authentication guard                   |
 | `src/modules/browser/browserManager.ts`     | Singleton Puppeteer browser; session lifecycle |
 | `src/modules/pdf/generatePdf.validation.ts` | Query-string validation & normalisation        |
+| `src/modules/drive/googleDriveManager.ts`   | Google Drive upload via Service Account        |
 | `src/utils/downloadDir.ts`                  | Resolves & ensures the `downloads/` directory  |
 | `src/routes/pdf.route.ts`                   | `GET /pdf/generate` handler                    |
 | `src/middleware/globalErrorHandler.ts`      | Catches unhandled errors; returns JSON         |
@@ -162,6 +163,22 @@ Converts a web page to a PDF and saves it to `downloads/`.
 }
 ```
 
+When `save=true` and Google Drive is configured, the response includes:
+
+```json
+{
+  "error": false,
+  "message": "PDF generated successfully",
+  "pdfUrl": "/downloads/MyPage-1712345678.pdf",
+  "drive": {
+    "id": "1aBcDeFg...",
+    "name": "MyPage-1712345678.pdf",
+    "viewUrl": "https://drive.google.com/file/d/.../view",
+    "downloadUrl": "https://drive.google.com/uc?id=...&export=download"
+  }
+}
+```
+
 **Error response** `400 Bad Request` (validation failure)
 
 ```json
@@ -198,27 +215,34 @@ GET /downloads/MyPage-1712345678.pdf
 
 All parameters are passed as URL query strings to `GET /pdf/generate`.
 
-| Parameter           | Type                        | Default      | Description                                 |
-| ------------------- | --------------------------- | ------------ | ------------------------------------------- |
-| `url`               | `string`                    | **required** | Full URL of the web page to convert         |
-| `id`                | `string`                    | **required** | Unique session identifier                   |
-| `size`              | `A3\|A4\|A5\|Legal\|Letter` | `A4`         | Paper format                                |
-| `landscape`         | `"true"\|"false"`           | `false`      | Landscape orientation                       |
-| `scale`             | `number` (70–150)           | `100`        | Rendering scale percentage                  |
-| `printBackground`   | `"true"\|"false"`           | `true`       | Include CSS backgrounds                     |
-| `printHeaderFooter` | `"true"\|"false"`           | `false`      | Show date/URL header and page-number footer |
-| `margin`            | `number` ≥ 0                | `0`          | Global margin (px) applied to all sides     |
-| `marginTop`         | `number` ≥ 0                | `margin`     | Top margin override (px)                    |
-| `marginRight`       | `number` ≥ 0                | `margin`     | Right margin override (px)                  |
-| `marginBottom`      | `number` ≥ 0                | `margin`     | Bottom margin override (px)                 |
-| `marginLeft`        | `number` ≥ 0                | `margin`     | Left margin override (px)                   |
-| `autoPrint`         | `"true"\|"false"`           | `false`      | _(reserved)_ Auto-print trigger             |
-| `adjustSinglePage`  | `"true"\|"false"`           | `false`      | _(reserved)_ Single-page fit                |
+| Parameter           | Type                        | Default      | Description                                                               |
+| ------------------- | --------------------------- | ------------ | ------------------------------------------------------------------------- |
+| `url`               | `string`                    | **required** | Full URL of the web page to convert                                       |
+| `id`                | `string`                    | **required** | Unique session identifier                                                 |
+| `size`              | `A3\|A4\|A5\|Legal\|Letter` | `A4`         | Paper format                                                              |
+| `landscape`         | `"true"\|"false"`           | `false`      | Landscape orientation                                                     |
+| `scale`             | `number` (70–150)           | `100`        | Rendering scale percentage                                                |
+| `printBackground`   | `"true"\|"false"`           | `true`       | Include CSS backgrounds                                                   |
+| `printHeaderFooter` | `"true"\|"false"`           | `false`      | Show date/URL header and page-number footer                               |
+| `margin`            | `number` ≥ 0                | `0`          | Global margin (px) applied to all sides                                   |
+| `marginTop`         | `number` ≥ 0                | `margin`     | Top margin override (px)                                                  |
+| `marginRight`       | `number` ≥ 0                | `margin`     | Right margin override (px)                                                |
+| `marginBottom`      | `number` ≥ 0                | `margin`     | Bottom margin override (px)                                               |
+| `marginLeft`        | `number` ≥ 0                | `margin`     | Left margin override (px)                                                 |
+| `save`              | `"true"\|"false"`           | `false`      | Upload the PDF to Google Drive (see [setup guide](GOOGLE_DRIVE_SETUP.md)) |
+| `autoPrint`         | `"true"\|"false"`           | `false`      | _(reserved)_ Auto-print trigger                                           |
+| `adjustSinglePage`  | `"true"\|"false"`           | `false`      | _(reserved)_ Single-page fit                                              |
 
 **Example**
 
 ```
 GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&scale=100&printBackground=true&margin=10
+```
+
+**With Google Drive upload:**
+
+```
+GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&save=true
 ```
 
 ---
@@ -231,23 +255,25 @@ Copy `.env.example` to `.env` and adjust:
 cp .env.example .env
 ```
 
-| Variable                | Default      | Description                                                           |
-| ----------------------- | ------------ | --------------------------------------------------------------------- |
-| `NODE_ENV`              | `production` | Set to `development` to include error stack traces in API responses   |
-| `PORT`                  | `7301`       | Port the HTTP server listens on                                       |
-| `HOST`                  | `0.0.0.0`    | Network interface to bind to                                          |
-| `API_KEY`               | _(empty)_    | API key for authentication. Leave empty to disable auth (open access) |
-| `CORS_ORIGINS`          | `*`          | Comma-separated allowed origins, or `*` for all                       |
-| `RATE_LIMIT_MAX`        | `20`         | Max requests per IP per window                                        |
-| `RATE_LIMIT_WINDOW_MIN` | `1`          | Rate-limit window duration in minutes                                 |
-| `VIEWPORT_WIDTH`        | `1920`       | Puppeteer viewport width (px)                                         |
-| `VIEWPORT_HEIGHT`       | `2080`       | Puppeteer viewport height (px)                                        |
-| `PAGE_LOAD_TIMEOUT`     | `30000`      | Max time (ms) to wait for page navigation                             |
-| `PAGE_CREATE_TIMEOUT`   | `10000`      | Max time (ms) to wait for new browser tab creation                    |
-| `POST_LOAD_DELAY`       | `2000`       | Delay (ms) after page load before PDF generation                      |
-| `HEADLESS`              | `true`       | Run Puppeteer in headless mode                                        |
-| `PUPPETEER_EXECUTABLE_PATH` | _(empty)_ | Custom Chromium path (set automatically in Docker Alpine)          |
-| `JSON_BODY_LIMIT`       | `10mb`       | Max JSON request body size                                            |
+| Variable                          | Default      | Description                                                                               |
+| --------------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
+| `NODE_ENV`                        | `production` | Set to `development` to include error stack traces in API responses                       |
+| `PORT`                            | `7301`       | Port the HTTP server listens on                                                           |
+| `HOST`                            | `0.0.0.0`    | Network interface to bind to                                                              |
+| `API_KEY`                         | _(empty)_    | API key for authentication. Leave empty to disable auth (open access)                     |
+| `CORS_ORIGINS`                    | `*`          | Comma-separated allowed origins, or `*` for all                                           |
+| `RATE_LIMIT_MAX`                  | `20`         | Max requests per IP per window                                                            |
+| `RATE_LIMIT_WINDOW_MIN`           | `1`          | Rate-limit window duration in minutes                                                     |
+| `VIEWPORT_WIDTH`                  | `1920`       | Puppeteer viewport width (px)                                                             |
+| `VIEWPORT_HEIGHT`                 | `2080`       | Puppeteer viewport height (px)                                                            |
+| `PAGE_LOAD_TIMEOUT`               | `30000`      | Max time (ms) to wait for page navigation                                                 |
+| `PAGE_CREATE_TIMEOUT`             | `10000`      | Max time (ms) to wait for new browser tab creation                                        |
+| `POST_LOAD_DELAY`                 | `2000`       | Delay (ms) after page load before PDF generation                                          |
+| `HEADLESS`                        | `true`       | Run Puppeteer in headless mode                                                            |
+| `PUPPETEER_EXECUTABLE_PATH`       | _(empty)_    | Custom Chromium path (set automatically in Docker Alpine)                                 |
+| `JSON_BODY_LIMIT`                 | `10mb`       | Max JSON request body size                                                                |
+| `GOOGLE_SERVICE_ACCOUNT_KEY_PATH` | _(empty)_    | Path to a Google Service Account JSON key file (see [setup guide](GOOGLE_DRIVE_SETUP.md)) |
+| `GOOGLE_DRIVE_FOLDER_ID`          | _(empty)_    | Target Google Drive folder ID for PDF uploads                                             |
 
 ### Authentication
 
@@ -271,6 +297,7 @@ is enabled and will prompt for the API key when needed.
 ├── tsconfig.json
 ├── setup-nginx-build.sh              # Nginx activation script
 ├── setup-nginx-domain-demo-win.conf  # Sample Nginx vhost config
+├── GOOGLE_DRIVE_SETUP.md             # Google Drive integration guide
 ├── downloads/                        # Generated PDFs (git-ignored)
 └── src/
     ├── index.ts                      # Application entry point
@@ -282,6 +309,8 @@ is enabled and will prompt for the API key when needed.
     ├── modules/
     │   ├── browser/
     │   │   └── browserManager.ts     # Puppeteer singleton
+    │   ├── drive/
+    │   │   └── googleDriveManager.ts  # Google Drive upload helper
     │   └── pdf/
     │       └── generatePdf.validation.ts
     ├── routes/

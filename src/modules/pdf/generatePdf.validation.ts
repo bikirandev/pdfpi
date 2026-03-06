@@ -17,6 +17,7 @@ const DEFAULT_QUERY: TQueryParams = {
   marginRight: 0,
   marginBottom: 0,
   marginLeft: 0,
+  save: false,
 };
 
 /**
@@ -84,6 +85,7 @@ const validatePDFQueryParams = (query: TObj) => {
   parsedQuery.printHeaderFooter = query.printHeaderFooter === "true";
   parsedQuery.autoPrint = query.autoPrint === "true";
   parsedQuery.adjustSinglePage = query.adjustSinglePage === "true";
+  parsedQuery.save = query.save === "true";
 
   // --- margins (all values must be non-negative numbers) ---
   const globalMargin =

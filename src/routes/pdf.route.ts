@@ -5,6 +5,10 @@ import { browserManager } from "../modules/browser/browserManager";
 import { Request, Response, Router } from "express";
 import downloadDir from "../utils/downloadDir";
 import validatePDFQueryParams from "../modules/pdf/generatePdf.validation";
+import {
+  uploadToGoogleDrive,
+  isGoogleDriveConfigured,
+} from "../modules/drive/googleDriveManager";
 
 const pdfRoute = Router();
 
@@ -23,6 +27,7 @@ const pdfRoute = Router();
  *   - printHeaderFooter: Include header/footer. Default: false.
  *   - margin: Global margin in px applied to all sides. Default: 0.
  *   - marginTop/Right/Bottom/Left: Per-side margin overrides in px.
+ *   - save: Upload the generated PDF to Google Drive. Default: false.
  */
 pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
   const sessionId = req.query.id as string | undefined;
@@ -44,7 +49,9 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
     const page = await browserManager.createSession(url, id);
 
     // Allow the page to finish any post-load rendering (e.g. lazy images)
-    await new Promise<void>((resolve) => setTimeout(resolve, config.postLoadDelay));
+    await new Promise<void>((resolve) =>
+      setTimeout(resolve, config.postLoadDelay),
+    );
 
     // Build a filesystem-safe filename from the page title + timestamp
     const pageTitle = await page.title();
@@ -86,10 +93,31 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
 
     await page.pdf(pdfOptions);
 
+    // Optionally upload to Google Drive
+    let driveFile = null;
+    if (options.save) {
+      if (!isGoogleDriveConfigured()) {
+        return res.status(400).json({
+          error: true,
+          message:
+            "Google Drive is not configured on this server. Set GOOGLE_SERVICE_ACCOUNT_KEY_PATH and GOOGLE_DRIVE_FOLDER_ID.",
+        });
+      }
+      driveFile = await uploadToGoogleDrive(pdfPath);
+    }
+
     return res.json({
       error: false,
       message: "PDF generated successfully",
       pdfUrl: `/downloads/${filename}.pdf`,
+      ...(driveFile && {
+        drive: {
+          id: driveFile.id,
+          name: driveFile.name,
+          viewUrl: driveFile.webViewLink,
+          downloadUrl: driveFile.webContentLink,
+        },
+      }),
     });
   } catch (error: any) {
     console.error("PDF generation error:", error);

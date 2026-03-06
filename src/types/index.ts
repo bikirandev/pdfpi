@@ -35,4 +35,6 @@ export type TQueryParams = {
   marginBottom: number;
   /** Left margin override (px). */
   marginLeft: number;
+  /** When `true`, upload the generated PDF to Google Drive. */
+  save: boolean;
 };

@@ -53,6 +53,11 @@ const config = {
 
   /** Max JSON body size */
   jsonBodyLimit: envStr("JSON_BODY_LIMIT", "10mb"),
+
+  /** Path to the Google Service Account JSON key file */
+  googleServiceAccountKeyPath: envStr("GOOGLE_SERVICE_ACCOUNT_KEY_PATH", ""),
+  /** Google Drive folder ID where PDFs are uploaded */
+  googleDriveFolderId: envStr("GOOGLE_DRIVE_FOLDER_ID", ""),
 } as const;
 
 export default config;
