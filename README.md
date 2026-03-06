@@ -14,7 +14,6 @@ PDF file using a headless Chromium browser (Puppeteer).
    - [Development](#development)
    - [Production build](#production-build)
    - [Docker](#docker)
-   - [Nginx reverse-proxy](#nginx-reverse-proxy)
 5. [API Reference](#api-reference)
    - [PDF generation](#get-pdfgenerate)
    - [Static file downloads](#get-downloadsfilename)
@@ -143,22 +142,6 @@ The `Dockerfile` uses a two-stage build on **Node 24 LTS Alpine**:
    (Puppeteer's bundled Chromium download is skipped).
 2. **Runtime stage** – installs system Chromium via `apk`, copies
    `dist/` and `node_modules/` into a minimal Alpine image.
-
-### Nginx reverse-proxy
-
-A sample configuration is provided in `setup-nginx-domain.conf`.
-To activate it:
-
-```bash
-bash setup-nginx-build.sh pdf.yourdomain.com
-```
-
-This copies the template, substitutes your domain, enables the site,
-and restarts Nginx. Then install SSL with:
-
-```bash
-sudo certbot --nginx -d pdf.yourdomain.com
-```
 
 ---
 
@@ -313,8 +296,6 @@ is enabled and will prompt for the API key when needed.
 ├── Dockerfile                        # Two-stage Docker build
 ├── package.json
 ├── tsconfig.json
-├── setup-nginx-build.sh              # Nginx activation script
-├── setup-nginx-domain.conf           # Sample Nginx vhost template
 ├── docs/
 │   └── GOOGLE_DRIVE_SETUP.md         # Google Drive manual setup guide
 ├── downloads/                        # Generated PDFs (git-ignored)
