@@ -12,14 +12,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.1",
-    "puppeteer": "^23.8.0",
-    "uuid": "^11.0.3",
-    "ws": "^8.18.0"
+    "puppeteer": "^23.8.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/ws": "^8.5.13",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.3"
   }

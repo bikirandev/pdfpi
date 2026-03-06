@@ -1,838 +1,1032 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>7301N – Web-to-PDF API</title>
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-      :root {
-        --bg: #0d1117;
-        --surface: #161b22;
-        --surface2: #1c2230;
-        --border: #30363d;
-        --accent: #58a6ff;
-        --accent-dim: #1f6feb33;
-        --accent-hover: #79b8ff;
-        --green: #3fb950;
-        --purple: #bc8cff;
-        --yellow: #e3b341;
-        --red: #f85149;
-        --text: #e6edf3;
-        --text-muted: #8b949e;
-        --radius: 8px;
-        --radius-lg: 12px;
-        --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-        --shadow: 0 8px 24px rgba(0,0,0,.4);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7301N – Web-to-PDF API</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      html { scroll-behavior: smooth; }
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2230;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent-dim: #1f6feb33;
+      --accent-hover: #79b8ff;
+      --green: #3fb950;
+      --purple: #bc8cff;
+      --yellow: #e3b341;
+      --red: #f85149;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+    }
 
-      body {
-        font-family: var(--font);
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        min-height: 100vh;
-      }
+    html {
+      scroll-behavior: smooth;
+    }
 
-      /* ── NAV ── */
-      nav {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: rgba(13,17,23,.85);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border);
-        padding: 0 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 60px;
-      }
-      .nav-brand {
-        font-weight: 700;
-        font-size: 1.05rem;
-        color: var(--text);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: .5rem;
-      }
-      .nav-brand span.badge {
-        background: var(--accent);
-        color: #000;
-        font-size: .65rem;
-        font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 999px;
-        letter-spacing: .04em;
-      }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, .85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .nav-brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .nav-brand span.badge {
+      background: var(--accent);
+      color: #000;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      letter-spacing: .04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: .9rem;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 6rem 2rem 5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%, #1f6feb22 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-eyebrow .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 .accent {
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .65rem 1.4rem;
+      border-radius: var(--radius);
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px #58a6ff44;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── SECTION WRAPPER ── */
+    .section {
+      padding: 4rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+      letter-spacing: -.01em;
+    }
+
+    .section-sub {
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 540px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: .75rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+
+    .feature-card p {
+      font-size: .88rem;
+      color: var(--text-muted);
+    }
+
+    /* ── DEMO FORM ── */
+    .demo-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .demo-header {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .demo-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .demo-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .demo-dots .d1 {
+      background: var(--red);
+    }
+
+    .demo-dots .d2 {
+      background: var(--yellow);
+    }
+
+    .demo-dots .d3 {
+      background: var(--green);
+    }
+
+    .demo-title {
+      font-size: .85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .demo-body {
+      padding: 1.5rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .75rem;
+      margin-bottom: 1rem;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+    }
+
+    .form-group label {
+      font-size: .8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .form-group input,
+    .form-group select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: .6rem .85rem;
+      font-size: .9rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .form-group select option {
+      background: var(--bg);
+    }
+
+    .form-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .toggle-group input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .toggle-group label {
+      font-size: .85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .demo-result {
+      display: none;
+      margin-top: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      font-family: var(--mono);
+      font-size: .82rem;
+      color: var(--green);
+      word-break: break-all;
+      position: relative;
+    }
+
+    .demo-result.error {
+      color: var(--red);
+    }
+
+    .demo-result.loading {
+      color: var(--yellow);
+    }
+
+    #copyBtn {
+      position: absolute;
+      top: .5rem;
+      right: .5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: .7rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #copyBtn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── ENDPOINTS TABLE ── */
+    .endpoint-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+
+    .endpoint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      transition: border-color .2s;
+    }
+
+    .endpoint-card:hover {
+      border-color: var(--accent);
+    }
+
+    .method {
+      font-family: var(--mono);
+      font-size: .75rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      min-width: 46px;
+      text-align: center;
+    }
+
+    .method.get {
+      background: #1f6feb33;
+      color: var(--accent);
+    }
+
+    .endpoint-path {
+      font-family: var(--mono);
+      font-size: .9rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .endpoint-desc {
+      font-size: .82rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .endpoint-badge {
+      font-size: .7rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+
+    .badge-live {
+      background: #3fb95022;
+      color: var(--green);
+      border: 1px solid #3fb95044;
+    }
+
+    /* ── PARAMS TABLE ── */
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+
+    .params-table th {
+      text-align: left;
+      padding: .65rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .params-table td {
+      padding: .65rem 1rem;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .params-table tr:hover td {
+      background: var(--surface2);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: .82rem;
+      background: var(--surface2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--purple);
+    }
+
+    .req {
+      color: var(--red);
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    .opt {
+      color: var(--text-muted);
+      font-size: .72rem;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      font-family: var(--mono);
+      font-size: .82rem;
+      overflow-x: auto;
+      line-height: 1.7;
+      position: relative;
+      white-space: pre;
+    }
+
+    .code-block .k {
+      color: var(--purple);
+    }
+
+    .code-block .s {
+      color: var(--green);
+    }
+
+    .code-block .c {
+      color: var(--text-muted);
+    }
+
+    .code-block .n {
+      color: var(--accent);
+    }
+
+    /* ── QUICK-START STEPS ── */
+    .steps {
+      counter-reset: step;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .step::before {
+      content: counter(step);
+      width: 28px;
+      height: 28px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 1px solid #58a6ff55;
+    }
+
+    .step-title {
+      font-weight: 700;
+      margin-bottom: .3rem;
+      font-size: .95rem;
+    }
+
+    .step-desc {
+      font-size: .85rem;
+      color: var(--text-muted);
+      margin-bottom: .5rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: .85rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
       .nav-links {
-        display: flex;
-        gap: 1.5rem;
-        list-style: none;
-      }
-      .nav-links a {
-        color: var(--text-muted);
-        text-decoration: none;
-        font-size: .9rem;
-        transition: color .2s;
-      }
-      .nav-links a:hover { color: var(--accent); }
-
-      /* ── HERO ── */
-      .hero {
-        padding: 6rem 2rem 5rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-      }
-      .hero::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse 70% 50% at 50% 0%, #1f6feb22 0%, transparent 70%);
-        pointer-events: none;
-      }
-      .hero-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: .4rem;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        padding: 4px 14px;
-        border-radius: 999px;
-        font-size: .8rem;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-      }
-      .hero-eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-      h1 {
-        font-size: clamp(2rem, 6vw, 3.5rem);
-        font-weight: 800;
-        line-height: 1.15;
-        letter-spacing: -.02em;
-        margin-bottom: 1.25rem;
-      }
-      h1 .accent { color: var(--accent); }
-      .hero-desc {
-        max-width: 580px;
-        margin: 0 auto 2.5rem;
-        color: var(--text-muted);
-        font-size: 1.1rem;
-      }
-      .hero-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: .45rem;
-        padding: .65rem 1.4rem;
-        border-radius: var(--radius);
-        font-size: .95rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .2s;
-        border: none;
-      }
-      .btn-primary {
-        background: var(--accent);
-        color: #000;
-      }
-      .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px #58a6ff44; }
-      .btn-ghost {
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--border);
-      }
-      .btn-ghost:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
-
-      /* ── SECTION WRAPPER ── */
-      .section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
-      .section-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin-bottom: .5rem;
-        letter-spacing: -.01em;
-      }
-      .section-sub {
-        color: var(--text-muted);
-        margin-bottom: 2.5rem;
-        max-width: 540px;
-      }
-      .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
-
-      /* ── FEATURES GRID ── */
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.2rem;
-      }
-      .feature-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        transition: border-color .2s, transform .2s;
-      }
-      .feature-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-      .feature-icon {
-        font-size: 1.6rem;
-        margin-bottom: .75rem;
-      }
-      .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
-      .feature-card p { font-size: .88rem; color: var(--text-muted); }
-
-      /* ── DEMO FORM ── */
-      .demo-wrapper {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-      }
-      .demo-header {
-        background: var(--surface2);
-        border-bottom: 1px solid var(--border);
-        padding: 1rem 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: .75rem;
-      }
-      .demo-dots { display: flex; gap: 6px; }
-      .demo-dots span {
-        width: 12px; height: 12px; border-radius: 50%;
-      }
-      .demo-dots .d1 { background: var(--red); }
-      .demo-dots .d2 { background: var(--yellow); }
-      .demo-dots .d3 { background: var(--green); }
-      .demo-title { font-size: .85rem; color: var(--text-muted); font-weight: 600; }
-      .demo-body { padding: 1.5rem; }
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: .75rem;
-        margin-bottom: 1rem;
-        align-items: end;
-      }
-      .form-group { display: flex; flex-direction: column; gap: .35rem; }
-      .form-group label { font-size: .8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-      .form-group input, .form-group select {
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        color: var(--text);
-        padding: .6rem .85rem;
-        font-size: .9rem;
-        font-family: var(--font);
-        outline: none;
-        transition: border-color .2s;
-        width: 100%;
-      }
-      .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-      .form-group select option { background: var(--bg); }
-      .form-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: .75rem;
-        margin-bottom: 1.25rem;
-      }
-      .toggle-group { display: flex; align-items: center; gap: .5rem; }
-      .toggle-group input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
-      .toggle-group label { font-size: .85rem; color: var(--text-muted); cursor: pointer; user-select: none; }
-      .demo-result {
         display: none;
-        margin-top: 1rem;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1rem 1.25rem;
-        font-family: var(--mono);
-        font-size: .82rem;
-        color: var(--green);
-        word-break: break-all;
-        position: relative;
       }
-      .demo-result.error { color: var(--red); }
-      .demo-result.loading { color: var(--yellow); }
-      #copyBtn {
-        position: absolute;
-        top: .5rem; right: .5rem;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-size: .7rem;
-        padding: 3px 8px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      #copyBtn:hover { color: var(--accent); border-color: var(--accent); }
 
-      /* ── ENDPOINTS TABLE ── */
-      .endpoint-list { display: flex; flex-direction: column; gap: .75rem; }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
       .endpoint-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        transition: border-color .2s;
-      }
-      .endpoint-card:hover { border-color: var(--accent); }
-      .method {
-        font-family: var(--mono);
-        font-size: .75rem;
-        font-weight: 700;
-        padding: 3px 9px;
-        border-radius: 4px;
-        min-width: 46px;
-        text-align: center;
-      }
-      .method.get  { background: #1f6feb33; color: var(--accent); }
-      .method.post { background: #3fb95033; color: var(--green); }
-      .method.ws   { background: #bc8cff33; color: var(--purple); }
-      .endpoint-path { font-family: var(--mono); font-size: .9rem; color: var(--text); font-weight: 600; }
-      .endpoint-desc { font-size: .82rem; color: var(--text-muted); margin-top: 2px; }
-      .endpoint-badge {
-        font-size: .7rem;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: 2px 8px;
-        white-space: nowrap;
-      }
-      .badge-live { background: #3fb95022; color: var(--green); border: 1px solid #3fb95044; }
-      .badge-soon { background: #e3b34122; color: var(--yellow); border: 1px solid #e3b34144; }
-
-      /* ── PARAMS TABLE ── */
-      .params-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: .875rem;
-      }
-      .params-table th {
-        text-align: left;
-        padding: .65rem 1rem;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-size: .75rem;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-      }
-      .params-table td {
-        padding: .65rem 1rem;
-        border: 1px solid var(--border);
-        vertical-align: top;
-      }
-      .params-table tr:hover td { background: var(--surface2); }
-      code {
-        font-family: var(--mono);
-        font-size: .82rem;
-        background: var(--surface2);
-        padding: 1px 6px;
-        border-radius: 4px;
-        color: var(--purple);
-      }
-      .req { color: var(--red); font-size: .72rem; font-weight: 700; }
-      .opt { color: var(--text-muted); font-size: .72rem; }
-
-      /* ── CODE BLOCK ── */
-      .code-block {
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.25rem 1.5rem;
-        font-family: var(--mono);
-        font-size: .82rem;
-        overflow-x: auto;
-        line-height: 1.7;
-        position: relative;
-        white-space: pre;
-      }
-      .code-block .k { color: var(--purple); }
-      .code-block .s { color: var(--green); }
-      .code-block .c { color: var(--text-muted); }
-      .code-block .n { color: var(--accent); }
-
-      /* ── QUICK-START STEPS ── */
-      .steps { counter-reset: step; display: flex; flex-direction: column; gap: 1rem; }
-      .step {
-        counter-increment: step;
-        display: grid;
         grid-template-columns: auto 1fr;
-        gap: 1rem;
-        align-items: start;
       }
-      .step::before {
-        content: counter(step);
-        width: 28px;
-        height: 28px;
-        background: var(--accent-dim);
-        color: var(--accent);
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        font-size: .8rem;
-        font-weight: 700;
-        flex-shrink: 0;
-        border: 1px solid #58a6ff55;
-      }
-      .step-title { font-weight: 700; margin-bottom: .3rem; font-size: .95rem; }
-      .step-desc { font-size: .85rem; color: var(--text-muted); margin-bottom: .5rem; }
 
-      /* ── FOOTER ── */
-      footer {
-        border-top: 1px solid var(--border);
-        padding: 2.5rem 2rem;
-        text-align: center;
-        color: var(--text-muted);
-        font-size: .85rem;
+      .endpoint-badge {
+        display: none;
       }
-      footer a { color: var(--accent); text-decoration: none; }
-      footer a:hover { text-decoration: underline; }
 
-      /* ── RESPONSIVE ── */
-      @media (max-width: 640px) {
-        .nav-links { display: none; }
-        .form-row { grid-template-columns: 1fr; }
-        .endpoint-card { grid-template-columns: auto 1fr; }
-        .endpoint-badge { display: none; }
-        .params-table { font-size: .78rem; }
+      .params-table {
+        font-size: .78rem;
       }
-    </style>
-  </head>
-  <body>
+    }
+  </style>
+</head>
 
-    <!-- NAV -->
-    <nav>
-      <a class="nav-brand" href="#">
-        7301N
-        <span class="badge">API</span>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-brand" href="#">
+      7301N
+      <span class="badge">API</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#demo">Live Demo</a></li>
+      <li><a href="#endpoints">Endpoints</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#params">Parameters</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Self-hosted · REST · Puppeteer-powered
+    </div>
+    <h1>
+      Convert any web page<br />
+      to a <span class="accent">PDF</span> with one request
+    </h1>
+    <p class="hero-desc">
+      7301N is a lightweight API that renders any public URL inside a headless
+      Chromium browser and returns a pixel-perfect PDF — no browser plugins
+      required.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn btn-primary">
+        &#9654; Try it live
       </a>
-      <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#demo">Live Demo</a></li>
-        <li><a href="#endpoints">Endpoints</a></li>
-        <li><a href="#quickstart">Quick Start</a></li>
-        <li><a href="#params">Parameters</a></li>
-      </ul>
-    </nav>
+      <a href="#endpoints" class="btn btn-ghost">
+        &#128196; API Reference
+      </a>
+    </div>
+  </header>
 
-    <!-- HERO -->
-    <header class="hero">
-      <div class="hero-eyebrow">
-        <span class="dot"></span>
-        Self-hosted · REST + WebSocket · Puppeteer-powered
+  <hr class="divider" />
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <p class="section-title">Everything you need</p>
+    <p class="section-sub">
+      A focused set of features built for automation, browser extensions, and
+      server-side document generation.
+    </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">&#128196;</div>
+        <h3>PDF Generation</h3>
+        <p>Pass any URL as a query parameter and receive a link to a
+          high-fidelity PDF rendered by Chromium — including backgrounds, fonts,
+          and layout.</p>
       </div>
-      <h1>
-        Convert any web page<br />
-        to a <span class="accent">PDF</span> with one request
-      </h1>
-      <p class="hero-desc">
-        7301N is a lightweight API that renders any public URL inside a headless
-        Chromium browser and returns a pixel-perfect PDF — no browser plugins
-        required.
-      </p>
-      <div class="hero-actions">
-        <a href="#demo" class="btn btn-primary">
-          &#9654; Try it live
-        </a>
-        <a href="#endpoints" class="btn btn-ghost">
-          &#128196; API Reference
-        </a>
+      <div class="feature-card">
+        <div class="feature-icon">&#9881;</div>
+        <h3>Rich Print Options</h3>
+        <p>Control paper size (A3–Legal), orientation, scale, margins, and
+          whether to include CSS backgrounds or print headers &amp; footers.</p>
       </div>
-    </header>
-
-    <hr class="divider" />
-
-    <!-- FEATURES -->
-    <section class="section" id="features">
-      <p class="section-title">Everything you need</p>
-      <p class="section-sub">
-        A focused set of features built for automation, browser extensions, and
-        server-side document generation.
-      </p>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">&#128196;</div>
-          <h3>PDF Generation</h3>
-          <p>Pass any URL as a query parameter and receive a link to a
-            high-fidelity PDF rendered by Chromium — including backgrounds, fonts,
-            and layout.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">&#9881;</div>
-          <h3>Rich Print Options</h3>
-          <p>Control paper size (A3–Legal), orientation, scale, margins, and
-            whether to include CSS backgrounds or print headers &amp; footers.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">&#128247;</div>
-          <h3>HTML Snapshot Storage</h3>
-          <p>POST raw HTML from a browser extension or scraper and persist it
-            as a timestamped JSON file for later processing.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">&#128268;</div>
-          <h3>Server-Sent Events</h3>
-          <p>Stream real-time progress events to any browser or SSE client
-            over a persistent HTTP connection — no polling needed.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">&#9889;</div>
-          <h3>WebSocket Channels</h3>
-          <p>Subscribe to named pub/sub channels over a WebSocket connection
-            for live state updates: created, updated, and removed events.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">&#128736;</div>
-          <h3>Easy Self-Hosting</h3>
-          <p>Single Node.js process on port 7301. Run bare-metal, inside
-            Docker, or behind an Nginx reverse proxy in minutes.</p>
-        </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128736;</div>
+        <h3>Easy Self-Hosting</h3>
+        <p>Single Node.js process on port 7301. Run bare-metal, inside
+          Docker, or behind an Nginx reverse proxy in minutes.</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <hr class="divider" />
+  <hr class="divider" />
 
-    <!-- LIVE DEMO -->
-    <section class="section" id="demo">
-      <p class="section-title">Live Demo</p>
-      <p class="section-sub">
-        Enter a public URL below, choose your options, and hit Generate PDF to
-        see the API in action.
-      </p>
-      <div class="demo-wrapper">
-        <div class="demo-header">
-          <div class="demo-dots">
-            <span class="d1"></span><span class="d2"></span><span class="d3"></span>
-          </div>
-          <span class="demo-title">GET /pdf/generate</span>
+  <!-- LIVE DEMO -->
+  <section class="section" id="demo">
+    <p class="section-title">Live Demo</p>
+    <p class="section-sub">
+      Enter a public URL below, choose your options, and hit Generate PDF to
+      see the API in action.
+    </p>
+    <div class="demo-wrapper">
+      <div class="demo-header">
+        <div class="demo-dots">
+          <span class="d1"></span><span class="d2"></span><span class="d3"></span>
         </div>
-        <div class="demo-body">
-          <div class="form-row">
-            <div class="form-group" style="flex:1">
-              <label for="demoUrl">URL to convert</label>
-              <input id="demoUrl" type="url" placeholder="https://example.com" value="https://example.com" />
-            </div>
-            <div class="form-group">
-              <label for="demoSize">Paper size</label>
-              <select id="demoSize">
-                <option value="A4" selected>A4</option>
-                <option value="A3">A3</option>
-                <option value="A5">A5</option>
-                <option value="Letter">Letter</option>
-                <option value="Legal">Legal</option>
-              </select>
-            </div>
+        <span class="demo-title">GET /pdf/generate</span>
+      </div>
+      <div class="demo-body">
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label for="demoUrl">URL to convert</label>
+            <input id="demoUrl" type="url" placeholder="https://example.com" value="https://example.com" />
           </div>
-          <div class="form-options">
-            <div class="toggle-group">
-              <input type="checkbox" id="demoLandscape" />
-              <label for="demoLandscape">Landscape</label>
-            </div>
-            <div class="toggle-group">
-              <input type="checkbox" id="demoBg" checked />
-              <label for="demoBg">Print background</label>
-            </div>
-            <div class="toggle-group">
-              <input type="checkbox" id="demoHF" />
-              <label for="demoHF">Header &amp; footer</label>
-            </div>
+          <div class="form-group">
+            <label for="demoSize">Paper size</label>
+            <select id="demoSize">
+              <option value="A4" selected>A4</option>
+              <option value="A3">A3</option>
+              <option value="A5">A5</option>
+              <option value="Letter">Letter</option>
+              <option value="Legal">Legal</option>
+            </select>
           </div>
-          <button class="btn btn-primary" id="generateBtn" onclick="generatePdf()">
-            &#9654;&nbsp; Generate PDF
-          </button>
-          <div class="demo-result" id="demoResult">
-            <button id="copyBtn" onclick="copyResult()">Copy</button>
-            <span id="resultText"></span>
+        </div>
+        <div class="form-options">
+          <div class="toggle-group">
+            <input type="checkbox" id="demoLandscape" />
+            <label for="demoLandscape">Landscape</label>
           </div>
+          <div class="toggle-group">
+            <input type="checkbox" id="demoBg" checked />
+            <label for="demoBg">Print background</label>
+          </div>
+          <div class="toggle-group">
+            <input type="checkbox" id="demoHF" />
+            <label for="demoHF">Header &amp; footer</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="generateBtn" onclick="generatePdf()">
+          &#9654;&nbsp; Generate PDF
+        </button>
+        <div class="demo-result" id="demoResult">
+          <button id="copyBtn" onclick="copyResult()">Copy</button>
+          <span id="resultText"></span>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <hr class="divider" />
+  <hr class="divider" />
 
-    <!-- ENDPOINTS -->
-    <section class="section" id="endpoints">
-      <p class="section-title">API Endpoints</p>
-      <p class="section-sub">All routes are served on the same port (default 7301).</p>
-      <div class="endpoint-list">
-        <div class="endpoint-card">
-          <span class="method get">GET</span>
-          <div>
-            <div class="endpoint-path">/pdf/generate</div>
-            <div class="endpoint-desc">Render a URL to PDF via headless Chromium and return the download path.</div>
-          </div>
-          <span class="endpoint-badge badge-live">Live</span>
+  <!-- ENDPOINTS -->
+  <section class="section" id="endpoints">
+    <p class="section-title">API Endpoints</p>
+    <p class="section-sub">All routes are served on the same port (default 7301).</p>
+    <div class="endpoint-list">
+      <div class="endpoint-card">
+        <span class="method get">GET</span>
+        <div>
+          <div class="endpoint-path">/pdf/generate</div>
+          <div class="endpoint-desc">Render a URL to PDF via headless Chromium and return the download path.</div>
         </div>
-        <div class="endpoint-card">
-          <span class="method post">POST</span>
-          <div>
-            <div class="endpoint-path">/api/scraped-data</div>
-            <div class="endpoint-desc">Accept a raw HTML snapshot and persist it as a timestamped JSON file.</div>
-          </div>
-          <span class="endpoint-badge badge-live">Live</span>
+        <span class="endpoint-badge badge-live">Live</span>
+      </div>
+      <div class="endpoint-card">
+        <span class="method get">GET</span>
+        <div>
+          <div class="endpoint-path">/downloads/:filename</div>
+          <div class="endpoint-desc">Serve a previously generated PDF as a static file.</div>
         </div>
-        <div class="endpoint-card">
-          <span class="method get">GET</span>
-          <div>
-            <div class="endpoint-path">/events</div>
-            <div class="endpoint-desc">Server-Sent Events stream — 10 progress messages then connection close.</div>
-          </div>
-          <span class="endpoint-badge badge-live">Live</span>
-        </div>
-        <div class="endpoint-card">
-          <span class="method get">GET</span>
-          <div>
-            <div class="endpoint-path">/channel/create</div>
-            <div class="endpoint-desc">Channel management stub — use the WebSocket interface instead.</div>
-          </div>
-          <span class="endpoint-badge badge-soon">Coming soon</span>
-        </div>
-        <div class="endpoint-card">
-          <span class="method get">GET</span>
-          <div>
-            <div class="endpoint-path">/downloads/:filename</div>
-            <div class="endpoint-desc">Serve a previously generated PDF as a static file.</div>
-          </div>
-          <span class="endpoint-badge badge-live">Live</span>
-        </div>
-        <div class="endpoint-card">
-          <span class="method ws">WS</span>
-          <div>
-            <div class="endpoint-path">ws://&lt;host&gt;:7301</div>
-            <div class="endpoint-desc">Real-time pub/sub channel bus — subscribe, unsubscribe, and receive channel events.</div>
-          </div>
-          <span class="endpoint-badge badge-live">Live</span>
+        <span class="endpoint-badge badge-live">Live</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- QUICK START -->
+  <section class="section" id="quickstart">
+    <p class="section-title">Quick Start</p>
+    <p class="section-sub">Up and running in under five minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <div class="step-title">Install dependencies</div>
+          <div class="code-block">yarn install</div>
         </div>
       </div>
-    </section>
-
-    <hr class="divider" />
-
-    <!-- QUICK START -->
-    <section class="section" id="quickstart">
-      <p class="section-title">Quick Start</p>
-      <p class="section-sub">Up and running in under five minutes.</p>
-      <div class="steps">
-        <div class="step">
-          <div>
-            <div class="step-title">Install dependencies</div>
-            <div class="code-block">yarn install</div>
-          </div>
+      <div class="step">
+        <div>
+          <div class="step-title">Download Chromium (first run only)</div>
+          <div class="code-block">npx puppeteer browsers install chrome</div>
         </div>
-        <div class="step">
-          <div>
-            <div class="step-title">Download Chromium (first run only)</div>
-            <div class="code-block">npx puppeteer browsers install chrome</div>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <div class="step-title">Start the dev server</div>
-            <div class="code-block">yarn dev
-<span class="c"># → http://localhost:7301</span></div>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <div class="step-title">Generate your first PDF</div>
-            <div class="step-desc">Open the URL below in your browser or run it with curl:</div>
-            <div class="code-block"><span class="k">GET</span> <span class="n">http://localhost:7301</span><span class="s">/pdf/generate?url=https://example.com&amp;id=demo-001</span></div>
+      </div>
+      <div class="step">
+        <div>
+          <div class="step-title">Start the dev server</div>
+          <div class="code-block">yarn dev
+            <span class="c"># → http://localhost:7301</span>
           </div>
         </div>
       </div>
-
-      <div style="margin-top: 2rem;">
-        <p class="section-title" style="font-size: 1.2rem; margin-bottom: .75rem;">Docker</p>
-        <div class="code-block"><span class="c"># Build the image</span>
-docker build -t web-to-pdf .
-
-<span class="c"># Run on port 7301</span>
-docker run -p 7301:7301 web-to-pdf</div>
+      <div class="step">
+        <div>
+          <div class="step-title">Generate your first PDF</div>
+          <div class="step-desc">Open the URL below in your browser or run it with curl:</div>
+          <div class="code-block"><span class="k">GET</span> <span class="n">http://localhost:7301</span><span
+              class="s">/pdf/generate?url=https://example.com&amp;id=demo-001</span></div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <hr class="divider" />
+    <div style="margin-top: 2rem;">
+      <p class="section-title" style="font-size: 1.2rem; margin-bottom: .75rem;">Docker</p>
+      <div class="code-block"><span class="c"># Build the image</span>
+        docker build -t web-to-pdf .
 
-    <!-- PARAMS -->
-    <section class="section" id="params">
-      <p class="section-title">Query-Parameter Reference</p>
-      <p class="section-sub">All parameters for <code>GET /pdf/generate</code>.</p>
-      <div style="overflow-x: auto;">
-        <table class="params-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>url</code> <span class="req">required</span></td>
-              <td>string</td>
-              <td>—</td>
-              <td>Full URL of the page to convert.</td>
-            </tr>
-            <tr>
-              <td><code>id</code> <span class="req">required</span></td>
-              <td>string</td>
-              <td>—</td>
-              <td>Unique session identifier for this request.</td>
-            </tr>
-            <tr>
-              <td><code>size</code> <span class="opt">optional</span></td>
-              <td>A3 | A4 | A5 | Legal | Letter</td>
-              <td><code>A4</code></td>
-              <td>Paper format.</td>
-            </tr>
-            <tr>
-              <td><code>landscape</code> <span class="opt">optional</span></td>
-              <td>"true" | "false"</td>
-              <td><code>false</code></td>
-              <td>Landscape orientation.</td>
-            </tr>
-            <tr>
-              <td><code>scale</code> <span class="opt">optional</span></td>
-              <td>number (70–150)</td>
-              <td><code>100</code></td>
-              <td>Rendering scale as a percentage.</td>
-            </tr>
-            <tr>
-              <td><code>printBackground</code> <span class="opt">optional</span></td>
-              <td>"true" | "false"</td>
-              <td><code>true</code></td>
-              <td>Include CSS backgrounds in the output.</td>
-            </tr>
-            <tr>
-              <td><code>printHeaderFooter</code> <span class="opt">optional</span></td>
-              <td>"true" | "false"</td>
-              <td><code>false</code></td>
-              <td>Show date/URL header and page-number footer.</td>
-            </tr>
-            <tr>
-              <td><code>margin</code> <span class="opt">optional</span></td>
-              <td>number ≥ 0</td>
-              <td><code>0</code></td>
-              <td>Global margin (px) applied to all four sides.</td>
-            </tr>
-            <tr>
-              <td><code>marginTop</code> <span class="opt">optional</span></td>
-              <td>number ≥ 0</td>
-              <td><code>margin</code></td>
-              <td>Top margin override (px).</td>
-            </tr>
-            <tr>
-              <td><code>marginRight</code> <span class="opt">optional</span></td>
-              <td>number ≥ 0</td>
-              <td><code>margin</code></td>
-              <td>Right margin override (px).</td>
-            </tr>
-            <tr>
-              <td><code>marginBottom</code> <span class="opt">optional</span></td>
-              <td>number ≥ 0</td>
-              <td><code>margin</code></td>
-              <td>Bottom margin override (px).</td>
-            </tr>
-            <tr>
-              <td><code>marginLeft</code> <span class="opt">optional</span></td>
-              <td>number ≥ 0</td>
-              <td><code>margin</code></td>
-              <td>Left margin override (px).</td>
-            </tr>
-          </tbody>
-        </table>
+        <span class="c"># Run on port 7301</span>
+        docker run -p 7301:7301 web-to-pdf
       </div>
-    </section>
+    </div>
+  </section>
 
-    <hr class="divider" />
+  <hr class="divider" />
 
-    <!-- FOOTER -->
-    <footer>
-      <p>
-        <strong>7301N – Web-to-PDF API</strong> &nbsp;·&nbsp;
-        MIT License &nbsp;·&nbsp;
-        Built with <a href="https://expressjs.com/" target="_blank" rel="noopener noreferrer">Express</a>
-        &amp; <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer">Puppeteer</a>
-      </p>
-    </footer>
+  <!-- PARAMS -->
+  <section class="section" id="params">
+    <p class="section-title">Query-Parameter Reference</p>
+    <p class="section-sub">All parameters for <code>GET /pdf/generate</code>.</p>
+    <div style="overflow-x: auto;">
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>url</code> <span class="req">required</span></td>
+            <td>string</td>
+            <td>—</td>
+            <td>Full URL of the page to convert.</td>
+          </tr>
+          <tr>
+            <td><code>id</code> <span class="req">required</span></td>
+            <td>string</td>
+            <td>—</td>
+            <td>Unique session identifier for this request.</td>
+          </tr>
+          <tr>
+            <td><code>size</code> <span class="opt">optional</span></td>
+            <td>A3 | A4 | A5 | Legal | Letter</td>
+            <td><code>A4</code></td>
+            <td>Paper format.</td>
+          </tr>
+          <tr>
+            <td><code>landscape</code> <span class="opt">optional</span></td>
+            <td>"true" | "false"</td>
+            <td><code>false</code></td>
+            <td>Landscape orientation.</td>
+          </tr>
+          <tr>
+            <td><code>scale</code> <span class="opt">optional</span></td>
+            <td>number (70–150)</td>
+            <td><code>100</code></td>
+            <td>Rendering scale as a percentage.</td>
+          </tr>
+          <tr>
+            <td><code>printBackground</code> <span class="opt">optional</span></td>
+            <td>"true" | "false"</td>
+            <td><code>true</code></td>
+            <td>Include CSS backgrounds in the output.</td>
+          </tr>
+          <tr>
+            <td><code>printHeaderFooter</code> <span class="opt">optional</span></td>
+            <td>"true" | "false"</td>
+            <td><code>false</code></td>
+            <td>Show date/URL header and page-number footer.</td>
+          </tr>
+          <tr>
+            <td><code>margin</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>0</code></td>
+            <td>Global margin (px) applied to all four sides.</td>
+          </tr>
+          <tr>
+            <td><code>marginTop</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>margin</code></td>
+            <td>Top margin override (px).</td>
+          </tr>
+          <tr>
+            <td><code>marginRight</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>margin</code></td>
+            <td>Right margin override (px).</td>
+          </tr>
+          <tr>
+            <td><code>marginBottom</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>margin</code></td>
+            <td>Bottom margin override (px).</td>
+          </tr>
+          <tr>
+            <td><code>marginLeft</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>margin</code></td>
+            <td>Left margin override (px).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <script>
-      async function generatePdf() {
-        const url    = document.getElementById('demoUrl').value.trim();
-        const size   = document.getElementById('demoSize').value;
-        const land   = document.getElementById('demoLandscape').checked;
-        const bg     = document.getElementById('demoBg').checked;
-        const hf     = document.getElementById('demoHF').checked;
-        const result = document.getElementById('demoResult');
-        const text   = document.getElementById('resultText');
-        const btn    = document.getElementById('generateBtn');
+  <hr class="divider" />
 
-        if (!url) {
-          result.className = 'demo-result error';
-          result.style.display = 'block';
-          text.textContent = 'Error: please enter a URL.';
-          return;
-        }
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      <strong>7301N – Web-to-PDF API</strong> &nbsp;·&nbsp;
+      MIT License &nbsp;·&nbsp;
+      Built with <a href="https://expressjs.com/" target="_blank" rel="noopener noreferrer">Express</a>
+      &amp; <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer">Puppeteer</a>
+    </p>
+  </footer>
 
-        const id = 'demo-' + Date.now();
-        const params = new URLSearchParams({
-          url, id,
-          size,
-          landscape: land.toString(),
-          printBackground: bg.toString(),
-          printHeaderFooter: hf.toString(),
-        });
-        const apiUrl = '/pdf/generate?' + params.toString();
+  <script>
+    async function generatePdf() {
+      const url = document.getElementById('demoUrl').value.trim();
+      const size = document.getElementById('demoSize').value;
+      const land = document.getElementById('demoLandscape').checked;
+      const bg = document.getElementById('demoBg').checked;
+      const hf = document.getElementById('demoHF').checked;
+      const result = document.getElementById('demoResult');
+      const text = document.getElementById('resultText');
+      const btn = document.getElementById('generateBtn');
 
-        btn.disabled = true;
-        result.className = 'demo-result loading';
+      if (!url) {
+        result.className = 'demo-result error';
         result.style.display = 'block';
-        text.textContent = 'Generating PDF… this may take a few seconds.';
+        text.textContent = 'Error: please enter a URL.';
+        return;
+      }
 
-        try {
-          const res  = await fetch(apiUrl);
-          const data = await res.json();
-          if (data.error) {
-            result.className = 'demo-result error';
-            text.textContent = 'Error: ' + (typeof data.message === 'string' ? data.message : JSON.stringify(data.message));
-          } else {
-            result.className = 'demo-result';
-            const pdfHref = data.pdfUrl;
-            text.dataset.pdfUrl = pdfHref;
-            text.innerHTML = '&#10003; PDF ready: <a href="' + pdfHref + '" target="_blank" rel="noopener" style="color:var(--accent)">' + pdfHref + '</a>';
-          }
-        } catch (err) {
+      const id = 'demo-' + Date.now();
+      const params = new URLSearchParams({
+        url, id,
+        size,
+        landscape: land.toString(),
+        printBackground: bg.toString(),
+        printHeaderFooter: hf.toString(),
+      });
+      const apiUrl = '/pdf/generate?' + params.toString();
+
+      btn.disabled = true;
+      result.className = 'demo-result loading';
+      result.style.display = 'block';
+      text.textContent = 'Generating PDF… this may take a few seconds.';
+
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        if (data.error) {
           result.className = 'demo-result error';
-          text.textContent = 'Network error — is the server running on this host?';
-        } finally {
-          btn.disabled = false;
+          text.textContent = 'Error: ' + (typeof data.message === 'string' ? data.message : JSON.stringify(data.message));
+        } else {
+          result.className = 'demo-result';
+          const pdfHref = data.pdfUrl;
+          text.dataset.pdfUrl = pdfHref;
+          text.innerHTML = '&#10003; PDF ready: <a href="' + pdfHref + '" target="_blank" rel="noopener" style="color:var(--accent)">' + pdfHref + '</a>';
         }
+      } catch (err) {
+        result.className = 'demo-result error';
+        text.textContent = 'Network error — is the server running on this host?';
+      } finally {
+        btn.disabled = false;
       }
+    }
 
-      function copyResult() {
-        const textEl = document.getElementById('resultText');
-        const toCopy = textEl.dataset.pdfUrl || textEl.textContent;
-        navigator.clipboard.writeText(toCopy).then(() => {
-          const btn = document.getElementById('copyBtn');
-          btn.textContent = 'Copied!';
-          setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
-        });
-      }
-    </script>
-  </body>
+    function copyResult() {
+      const textEl = document.getElementById('resultText');
+      const toCopy = textEl.dataset.pdfUrl || textEl.textContent;
+      navigator.clipboard.writeText(toCopy).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+      });
+    }
+  </script>
+</body>
+
 </html>
