@@ -180,10 +180,15 @@
       color: #000;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--accent-hover);
       transform: translateY(-1px);
       box-shadow: 0 4px 14px #58a6ff44;
+    }
+
+    .btn-primary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
 
     .btn-ghost {
@@ -350,6 +355,7 @@
     .form-group input:focus,
     .form-group select:focus {
       border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
     .form-group select option {
@@ -389,7 +395,7 @@
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1rem 1.25rem;
+      padding: 1rem 3.5rem 1rem 1.25rem;
       font-family: var(--mono);
       font-size: .82rem;
       color: var(--green);

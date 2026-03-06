@@ -208,6 +208,7 @@
         .field input[type="text"],
         .field input[type="url"],
         .field input[type="number"],
+        .field input[type="password"],
         .field select {
             width: 100%;
             background: var(--bg);
@@ -224,6 +225,7 @@
         .field input:focus,
         .field select:focus {
             border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
         .field select option {
@@ -308,7 +310,7 @@
             color: #000;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: var(--accent-hover);
             transform: translateY(-1px);
             box-shadow: 0 4px 14px #58a6ff44;
@@ -327,7 +329,7 @@
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
+        .btn-secondary:hover:not(:disabled) {
             color: var(--accent);
             border-color: var(--accent);
         }
@@ -537,6 +539,13 @@
             font-size: .82rem;
             text-align: center;
             padding: 1.5rem;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .nav-links {
+                display: none;
+            }
         }
 
         /* ── SPINNER ── */
