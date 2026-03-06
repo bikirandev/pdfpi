@@ -966,6 +966,24 @@
   </footer>
 
   <script>
+    let authEnabled = false;
+
+    // Check if API key auth is enabled on this server
+    fetch('/api/auth-status').then(r => r.json()).then(d => {
+      authEnabled = d.authEnabled;
+      if (authEnabled) {
+        // Inject API key field before the generate button
+        const demoBody = document.querySelector('.demo-body');
+        const genBtn = document.getElementById('generateBtn');
+        const keyDiv = document.createElement('div');
+        keyDiv.className = 'form-group';
+        keyDiv.style.marginBottom = '1rem';
+        keyDiv.innerHTML = '<label for="demoApiKey">API Key <span style="color:var(--red)">*</span></label>' +
+          '<input id="demoApiKey" type="password" placeholder="Enter your API key" />';
+        demoBody.insertBefore(keyDiv, genBtn);
+      }
+    }).catch(() => {});
+
     async function generatePdf() {
       const url = document.getElementById('demoUrl').value.trim();
       const size = document.getElementById('demoSize').value;
@@ -998,8 +1016,20 @@
       result.style.display = 'block';
       text.textContent = 'Generating PDF… this may take a few seconds.';
 
+      const fetchOpts = {};
+      if (authEnabled) {
+        const apiKey = (document.getElementById('demoApiKey') || {}).value || '';
+        if (!apiKey) {
+          result.className = 'demo-result error';
+          text.textContent = 'Error: API key is required.';
+          btn.disabled = false;
+          return;
+        }
+        fetchOpts.headers = { 'x-api-key': apiKey };
+      }
+
       try {
-        const res = await fetch(apiUrl);
+        const res = await fetch(apiUrl, fetchOpts);
         const data = await res.json();
         if (data.error) {
           result.className = 'demo-result error';

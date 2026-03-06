@@ -58,8 +58,13 @@ RUN apt-get update && apt-get install -y \
     libdrm2 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Expose the port the app runs on
-EXPOSE 7301
+# Expose the port the app runs on (overridable via PORT env)
+EXPOSE ${PORT:-7301}
 
-# Start the Next.js application
+# Runtime environment defaults
+ENV NODE_ENV=production
+ENV PORT=7301
+ENV HOST=0.0.0.0
+
+# Start the application
 CMD ["yarn", "start"]

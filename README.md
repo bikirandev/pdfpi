@@ -44,7 +44,7 @@ Additional features:
 ```
                     ┌───────────────────────────────────────────────┐
                     │              Express HTTP Server               │
-                    │                  (port 7301)                   │
+                    │            (port from PORT env var)            │
                     │                                                │
  Client ──HTTP──▶  │  GET  /pdf/generate          → pdf.route       │
                     │  GET  /downloads/:file       → express.static  │
@@ -66,6 +66,8 @@ Additional features:
 | Path                                        | Responsibility                                 |
 | ------------------------------------------- | ---------------------------------------------- |
 | `src/index.ts`                              | Express + HTTP server bootstrap                |
+| `src/config.ts`                             | Centralised environment configuration          |
+| `src/middleware/apiKeyAuth.ts`              | API key authentication guard                   |
 | `src/modules/browser/browserManager.ts`     | Singleton Puppeteer browser; session lifecycle |
 | `src/modules/pdf/generatePdf.validation.ts` | Query-string validation & normalisation        |
 | `src/utils/downloadDir.ts`                  | Resolves & ensures the `downloads/` directory  |
@@ -222,9 +224,38 @@ GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&sc
 
 ## Environment variables
 
-| Variable   | Default   | Description                                                         |
-| ---------- | --------- | ------------------------------------------------------------------- |
-| `NODE_ENV` | _(unset)_ | Set to `development` to include error stack traces in API responses |
+Copy `.env.example` to `.env` and adjust:
+
+```bash
+cp .env.example .env
+```
+
+| Variable                | Default      | Description                                                           |
+| ----------------------- | ------------ | --------------------------------------------------------------------- |
+| `NODE_ENV`              | `production` | Set to `development` to include error stack traces in API responses   |
+| `PORT`                  | `7301`       | Port the HTTP server listens on                                       |
+| `HOST`                  | `0.0.0.0`    | Network interface to bind to                                          |
+| `API_KEY`               | _(empty)_    | API key for authentication. Leave empty to disable auth (open access) |
+| `CORS_ORIGINS`          | `*`          | Comma-separated allowed origins, or `*` for all                       |
+| `RATE_LIMIT_MAX`        | `20`         | Max requests per IP per window                                        |
+| `RATE_LIMIT_WINDOW_MIN` | `1`          | Rate-limit window duration in minutes                                 |
+| `VIEWPORT_WIDTH`        | `1920`       | Puppeteer viewport width (px)                                         |
+| `VIEWPORT_HEIGHT`       | `2080`       | Puppeteer viewport height (px)                                        |
+| `PAGE_LOAD_TIMEOUT`     | `30000`      | Max time (ms) to wait for page navigation                             |
+| `PAGE_CREATE_TIMEOUT`   | `10000`      | Max time (ms) to wait for new browser tab creation                    |
+| `POST_LOAD_DELAY`       | `2000`       | Delay (ms) after page load before PDF generation                      |
+| `HEADLESS`              | `true`       | Run Puppeteer in headless mode                                        |
+| `JSON_BODY_LIMIT`       | `10mb`       | Max JSON request body size                                            |
+
+### Authentication
+
+When `API_KEY` is set, all `/pdf/*` endpoints require a valid key via:
+
+- **Header**: `x-api-key: <your-key>`
+- **Query param**: `?apiKey=<your-key>`
+
+The UI pages (landing page & playground) automatically detect whether auth
+is enabled and will prompt for the API key when needed.
 
 ---
 
@@ -232,6 +263,7 @@ GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&sc
 
 ```
 .
+├── .env.example                      # Environment variable template
 ├── Dockerfile                        # Two-stage Docker build
 ├── package.json
 ├── tsconfig.json
@@ -240,7 +272,9 @@ GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&sc
 ├── downloads/                        # Generated PDFs (git-ignored)
 └── src/
     ├── index.ts                      # Application entry point
+    ├── config.ts                     # Centralised env-based configuration
     ├── middleware/
+    │   ├── apiKeyAuth.ts             # API key authentication middleware
     │   ├── globalErrorHandler.ts
     │   └── notFound.ts
     ├── modules/
@@ -258,10 +292,22 @@ GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&sc
 
 ---
 
+## Security
+
+The API ships with multiple security layers that can be activated via
+environment variables:
+
+| Feature                 | How to enable                                                  |
+| ----------------------- | -------------------------------------------------------------- |
+| **API key auth**        | Set `API_KEY` env var                                          |
+| **Rate limiting**       | Enabled by default (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MIN`) |
+| **CORS restrictions**   | Set `CORS_ORIGINS` to specific origins                         |
+| **Helmet HTTP headers** | Always on (CSP, HSTS, X-Frame-Options, etc.)                   |
+
+---
+
 ## Known limitations
 
 - **Single browser process** – all PDF requests share one Puppeteer
   browser instance. Under high concurrency, requests will queue behind
   each other.
-- **No authentication** – all endpoints are publicly accessible. Deploy
-  behind an API gateway or add middleware if authentication is required.

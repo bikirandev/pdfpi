@@ -1,5 +1,6 @@
 import { join } from "path";
 import { PDFOptions } from "puppeteer";
+import config from "../config";
 import { browserManager } from "../modules/browser/browserManager";
 import { Request, Response, Router } from "express";
 import downloadDir from "../utils/downloadDir";
@@ -43,7 +44,7 @@ pdfRoute.get("/generate", async (req: Request, res: Response): Promise<any> => {
     const page = await browserManager.createSession(url, id);
 
     // Allow the page to finish any post-load rendering (e.g. lazy images)
-    await new Promise<void>((resolve) => setTimeout(resolve, 2000));
+    await new Promise<void>((resolve) => setTimeout(resolve, config.postLoadDelay));
 
     // Build a filesystem-safe filename from the page title + timestamp
     const pageTitle = await page.title();

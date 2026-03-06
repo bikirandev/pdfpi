@@ -1,4 +1,5 @@
 import puppeteer, { Browser, Page } from "puppeteer";
+import config from "../../config";
 
 /**
  * Manages a single shared Puppeteer browser instance and its open page
@@ -18,7 +19,7 @@ class BrowserManager {
   private sessions: Map<string, Page>;
   private headless: boolean;
 
-  constructor(headless: boolean = true) {
+  constructor(headless: boolean = config.headless) {
     this.browser = null;
     this.sessions = new Map();
     this.headless = headless;
@@ -90,7 +91,7 @@ class BrowserManager {
         new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error("Timed out creating a new page")),
-            10000
+            config.pageCreateTimeout
           )
         ),
       ]);
@@ -100,12 +101,12 @@ class BrowserManager {
     }
 
     // Use a wide viewport to avoid responsive-layout truncation
-    await page.setViewport({ width: 1920, height: 2080, deviceScaleFactor: 1 });
+    await page.setViewport({ width: config.viewportWidth, height: config.viewportHeight, deviceScaleFactor: 1 });
 
     try {
       await page.goto(url, {
         waitUntil: ["networkidle0", "domcontentloaded"],
-        timeout: 30000,
+        timeout: config.pageLoadTimeout,
       });
       console.log("Page loaded successfully for session", sessionId);
     } catch (error) {

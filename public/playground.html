@@ -743,6 +743,25 @@
     <script>
         // ── State ──
         const history = [];
+        let authEnabled = false;
+
+        // Check if API key auth is enabled
+        fetch('/api/auth-status').then(r => r.json()).then(d => {
+            authEnabled = d.authEnabled;
+            if (authEnabled) {
+                // Inject API key field before the Generated URL section
+                const panelBody = document.querySelector('.panel-body');
+                const sectionLabels = panelBody.querySelectorAll('.section-label');
+                const urlSection = sectionLabels[sectionLabels.length - 1]; // "Generated URL"
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'field';
+                keyDiv.innerHTML = '<div class="section-label">Authentication</div>' +
+                    '<label for="pgApiKey">API Key <span style="color:var(--red)">*</span></label>' +
+                    '<input id="pgApiKey" type="password" placeholder="Enter your API key" />' +
+                    '<div class="field-hint">Required – provided by the server admin</div>';
+                panelBody.insertBefore(keyDiv, urlSection);
+            }
+        }).catch(() => { });
 
         // ── Elements ──
         const els = {
@@ -850,8 +869,21 @@
             const qs = new URLSearchParams(p).toString();
             const apiUrl = '/pdf/generate?' + qs;
 
+            const fetchOpts = {};
+            if (authEnabled) {
+                const apiKeyEl = document.getElementById('pgApiKey');
+                const apiKey = apiKeyEl ? apiKeyEl.value.trim() : '';
+                if (!apiKey) {
+                    showStatus('error', 'API key is required.');
+                    btn.disabled = false;
+                    btn.innerHTML = '&#9654;&nbsp; Generate PDF';
+                    return;
+                }
+                fetchOpts.headers = { 'x-api-key': apiKey };
+            }
+
             try {
-                const res = await fetch(apiUrl);
+                const res = await fetch(apiUrl, fetchOpts);
                 const data = await res.json();
 
                 if (data.error) {
