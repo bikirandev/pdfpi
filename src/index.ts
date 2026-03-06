@@ -1,7 +1,7 @@
 import cors from "cors";
 import http from "http";
 import express, { NextFunction, Request, Response } from "express";
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
 import pdfRoute from "./routes/pdf.route";
@@ -19,49 +19,51 @@ const wss = new WebSocketServer({ server });
 
 const channelManager = new ChannelManager();
 
-// Ensure downloads directory exists
-// const downloadsDir = join(__dirname, "downloads");
-// await fs.mkdir(downloadsDir, { recursive: true });
-
+// Parse incoming JSON bodies (up to 10 MB)
 app.use(cors());
-app.use(
-  express.json({
-    limit: "10mb",
-  })
-);
+app.use(express.json({ limit: "10mb" }));
 
+// Serve generated PDFs as static files
 app.use("/downloads", express.static(downloadDir()));
+
+// API routes
 app.use("/pdf", pdfRoute);
 app.use("/api/scraped-data", scrapRoute);
 app.use("/channel", channelRoute);
 app.use("/events", eventRoute);
 
-// handle 404 errors
+// 404 handler – must be registered after all routes
 app.use((req: Request, res: Response, next: NextFunction): any =>
   notFound(req, res, next)
 );
 
-// handle global errors
+// Global error handler – must be the last middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction): any =>
   globalErrorHandler(err, req, res, next)
 );
 
-// WebSocket connection handling
-wss.on("connection", (ws: WebSocketServer) => {
-  console.log("New client connected");
+// WebSocket – real-time channel subscriptions
+wss.on("connection", (ws: WebSocket) => {
+  console.log("New WebSocket client connected");
 
-  ws.on("message", (message: string) => {
-    const data = JSON.parse(message);
+  ws.on("message", (raw: Buffer) => {
+    try {
+      const data = JSON.parse(raw.toString());
 
-    if (data.type === "subscribe") {
-      channelManager.subscribeClient(ws, data.channelId);
-    } else if (data.type === "unsubscribe") {
-      channelManager.unsubscribeClient(ws, data.channelId);
+      if (data.type === "subscribe") {
+        channelManager.subscribeClient(ws, data.channelId);
+      } else if (data.type === "unsubscribe") {
+        channelManager.unsubscribeClient(ws, data.channelId);
+      }
+    } catch (parseErr) {
+      const preview = raw.toString().slice(0, 100);
+      console.warn(`Received invalid WebSocket message (not valid JSON): "${preview}"`);
     }
   });
 
   ws.on("close", () => {
     channelManager.removeClient(ws);
+    console.log("WebSocket client disconnected");
   });
 });
 

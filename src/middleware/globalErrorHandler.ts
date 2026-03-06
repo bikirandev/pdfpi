@@ -1,18 +1,25 @@
 import { NextFunction, Request, Response } from "express";
 
+/**
+ * Express global error-handling middleware.
+ *
+ * Catches any error passed to `next(err)` and returns a structured JSON
+ * response.  The error stack is only included in the response body when the
+ * application is running in development mode to avoid leaking internals.
+ */
 const globalErrorHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
-  let statusCode: number = 500; // Internal server error
-  let message: string = err.message || "Error occurred";
+  const statusCode = 500;
+  const message = err.message || "An unexpected error occurred";
 
   return res.status(statusCode).json({
     success: false,
     message,
-    stack: process.env.NODE_ENV === "development" ? err.stack : null,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 };
 
