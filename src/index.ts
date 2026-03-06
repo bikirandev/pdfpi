@@ -7,6 +7,7 @@ import notFound from "./middleware/notFound";
 import pdfRoute from "./routes/pdf.route";
 import channelRoute from "./routes/channel.route";
 import downloadDir from "./utils/downloadDir";
+import publicDir from "./utils/publicDir";
 import { ChannelManager } from "./utils/channelManager";
 import eventRoute from "./routes/events.route";
 import scrapRoute from "./routes/scrap.route";
@@ -25,6 +26,9 @@ app.use(express.json({ limit: "10mb" }));
 
 // Serve generated PDFs as static files
 app.use("/downloads", express.static(downloadDir()));
+
+// Serve landing page and other public assets
+app.use(express.static(publicDir()));
 
 // API routes
 app.use("/pdf", pdfRoute);

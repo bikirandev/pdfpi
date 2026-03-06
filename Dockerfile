@@ -30,6 +30,7 @@ WORKDIR /app
 # Copy only the necessary files from the build stage
 COPY --from=build /app/package.json /app/yarn.lock ./
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public
 COPY --from=build /app/node_modules ./node_modules
 
 # Ensure Puppeteer cache is included in the final image
