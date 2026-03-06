@@ -1,6 +1,6 @@
 # Stage 1: Build the application
-# Use the official Node.js 22 image as the base image
-FROM node:22 AS build
+# Use the official Node.js 25 image as the base image
+FROM node:25 AS build
 
 # Set the working directory
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN yarn build
 
 # Stage 2: Run the application
 # Use a smaller Node.js runtime image for the final stage
-FROM node:22-slim AS runtime
+FROM node:25-slim AS runtime
 
 # Set the working directory
 WORKDIR /app
