@@ -12,6 +12,10 @@ import publicDir from "./utils/publicDir";
 
 const app = express();
 
+// ── Trust Proxy for express-rate-limit ──
+// Set this to ensure rate limiting correctly handles X-Forwarded-For headers
+app.set("trust proxy", 1);
+
 // ── Security headers ──
 app.use(
   helmet({
