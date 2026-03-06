@@ -3,6 +3,8 @@
 A self-hosted REST API that converts any public web page into a
 PDF file using a headless Chromium browser (Puppeteer).
 
+![PDFPi Playground](docs/thumb.png)
+
 ---
 
 ## Table of Contents
