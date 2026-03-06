@@ -1,5 +1,17 @@
 import { TObj, TQueryParams } from "../../types";
 
+/** Hostnames / IP patterns that must never be fetched (SSRF prevention). */
+const BLOCKED_HOSTS = [
+  /^localhost$/i,
+  /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
+  /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
+  /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
+  /^192\.168\.\d{1,3}\.\d{1,3}$/,
+  /^0\.0\.0\.0$/,
+  /^\[::1?\]$/,
+  /^169\.254\.\d{1,3}\.\d{1,3}$/,  // link-local
+];
+
 /** Default values applied when a query parameter is missing or not provided. */
 const DEFAULT_QUERY: TQueryParams = {
   url: "",
@@ -39,6 +51,8 @@ const validatePDFQueryParams = (query: TObj) => {
       const parsed = new URL(query.url);
       if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
         errors.url = "url must use http or https protocol";
+      } else if (BLOCKED_HOSTS.some((re) => re.test(parsed.hostname))) {
+        errors.url = "url must not point to an internal or reserved address";
       } else {
         parsedQuery.url = query.url;
       }

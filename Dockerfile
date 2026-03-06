@@ -2,6 +2,12 @@
 # Node 24 LTS on Alpine for minimal vulnerability surface
 FROM node:24-alpine AS build
 
+LABEL maintainer="Bishojit <bishojit@gmail.com>"
+LABEL org.opencontainers.image.title="PDFPi"
+LABEL org.opencontainers.image.description="Self-hosted REST API that converts any public web page into a PDF using headless Chromium"
+LABEL org.opencontainers.image.source="https://github.com/bikirandev/pdfpi"
+LABEL org.opencontainers.image.licenses="MIT"
+
 WORKDIR /app
 
 COPY package.json yarn.lock ./

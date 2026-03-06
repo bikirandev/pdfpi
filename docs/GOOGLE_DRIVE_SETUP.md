@@ -1,6 +1,6 @@
 # Google Drive Setup Guide
 
-This guide walks you through configuring the **7301N Web-to-PDF API** to
+This guide walks you through configuring the **PDFPi** API to
 automatically save generated PDFs to a Google Drive folder using a
 **Service Account** (no user-login required, fully server-side).
 

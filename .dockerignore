@@ -4,6 +4,7 @@ downloads
 data
 .env
 .env.*
+!.env.example
 .git
 *.md
 *.log

@@ -1,4 +1,4 @@
-# 7301N – Web-to-PDF API
+# PDFPi – Web-to-PDF API
 
 A self-hosted REST API that converts any public web page into a
 PDF file using a headless Chromium browser (Puppeteer).
@@ -17,18 +17,20 @@ PDF file using a headless Chromium browser (Puppeteer).
    - [Nginx reverse-proxy](#nginx-reverse-proxy)
 5. [API Reference](#api-reference)
    - [PDF generation](#get-pdfgenerate)
-   - [Static file downloads](#get-downloadsfilen)
+   - [Static file downloads](#get-downloadsfilename)
 6. [Query-parameter reference](#query-parameter-reference)
 7. [Environment variables](#environment-variables)
 8. [Project structure](#project-structure)
-9. [Known limitations](#known-limitations)
-10. [License](#license)
+9. [Security](#security)
+10. [Known limitations](#known-limitations)
+11. [Google Drive Setup](#google-drive-setup)
+12. [License](#license)
 
 ---
 
 ## Overview
 
-`7301N-API3-Web-To-Pdf` accepts a URL via a simple HTTP `GET` request,
+**PDFPi** accepts a URL via a simple HTTP `GET` request,
 renders the page inside a headless Chrome instance, and returns the path to
 the generated PDF. PDFs are stored in a `downloads/` directory at the
 project root and served as static files on the `/downloads` path.
@@ -37,6 +39,10 @@ Additional features:
 
 - **Static file serving** – generated PDFs are served on the `/downloads`
   path.
+- **Google Drive upload** – optionally save PDFs to a Shared Drive folder
+  via a built-in Setup UI or environment variables.
+- **SSRF protection** – internal/private IPs are blocked at the validation
+  layer.
 
 ---
 
@@ -100,10 +106,13 @@ Additional features:
 # 1. Install dependencies
 yarn install
 
-# 2. (First time) Download the Puppeteer-managed Chromium browser
+# 2. Copy the example env file
+cp .env.example .env
+
+# 3. (First time) Download the Puppeteer-managed Chromium browser
 npx puppeteer browsers install chrome
 
-# 3. Start the dev server with hot-reload
+# 4. Start the dev server with hot-reload
 yarn dev
 # → http://localhost:7301
 ```
@@ -119,10 +128,13 @@ yarn start   # runs node dist/index.js
 
 ```bash
 # Build image
-docker build -t web-to-pdf .
+docker build -t pdfpi .
 
 # Run container (maps port 7301)
-docker run -p 7301:7301 web-to-pdf
+docker run -d -p 7301:7301 pdfpi
+
+# With API key authentication
+docker run -d -p 7301:7301 -e API_KEY=your-secret-key pdfpi
 ```
 
 The `Dockerfile` uses a two-stage build on **Node 24 LTS Alpine**:
@@ -134,15 +146,18 @@ The `Dockerfile` uses a two-stage build on **Node 24 LTS Alpine**:
 
 ### Nginx reverse-proxy
 
-A sample configuration is provided in
-`setup-nginx-domain-demo-win.conf`. To activate it:
+A sample configuration is provided in `setup-nginx-domain.conf`.
+To activate it:
 
 ```bash
-bash setup-nginx-build.sh
-# or manually:
-sudo cp setup-nginx-domain-demo-win.conf /etc/nginx/sites-available/api3.bikiran.win
-sudo ln -s /etc/nginx/sites-available/api3.bikiran.win /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl restart nginx
+bash setup-nginx-build.sh pdf.yourdomain.com
+```
+
+This copies the template, substitutes your domain, enables the site,
+and restarts Nginx. Then install SSL with:
+
+```bash
+sudo certbot --nginx -d pdf.yourdomain.com
 ```
 
 ---
@@ -299,7 +314,7 @@ is enabled and will prompt for the API key when needed.
 ├── package.json
 ├── tsconfig.json
 ├── setup-nginx-build.sh              # Nginx activation script
-├── setup-nginx-domain-demo-win.conf  # Sample Nginx vhost config
+├── setup-nginx-domain.conf           # Sample Nginx vhost template
 ├── docs/
 │   └── GOOGLE_DRIVE_SETUP.md         # Google Drive manual setup guide
 ├── downloads/                        # Generated PDFs (git-ignored)
@@ -328,7 +343,8 @@ is enabled and will prompt for the API key when needed.
     ├── types/
     │   └── index.ts
     └── utils/
-        └── downloadDir.ts
+        ├── downloadDir.ts
+        └── publicDir.ts
 ```
 
 ---
@@ -344,6 +360,7 @@ environment variables:
 | **Rate limiting**       | Enabled by default (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MIN`) |
 | **CORS restrictions**   | Set `CORS_ORIGINS` to specific origins                         |
 | **Helmet HTTP headers** | Always on (CSP, HSTS, X-Frame-Options, etc.)                   |
+| **SSRF protection**     | Always on — blocks `localhost`, private IPs, link-local ranges |
 
 ---
 
