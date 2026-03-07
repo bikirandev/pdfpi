@@ -119,6 +119,69 @@ class BrowserManager {
     return page;
   }
 
+  /**
+   * Opens a new browser tab, sets `htmlContent` as the full page content, and
+   * associates the resulting page with `sessionId`.  Use this instead of
+   * {@link createSession} when you already have the HTML to render (e.g.
+   * markdown converted to HTML) and do not need to navigate to a URL.
+   *
+   * @throws If the browser has not been initialised.
+   * @throws If the page cannot be created within the configured timeout.
+   */
+  async createContentSession(
+    htmlContent: string,
+    sessionId: string
+  ): Promise<Page> {
+    if (!this.browser) {
+      throw new Error("Browser not initialized");
+    }
+
+    const existing = this.sessions.get(sessionId);
+    if (existing) {
+      console.log("Reusing existing session", sessionId);
+      return existing;
+    }
+
+    console.log("Creating content session", sessionId);
+
+    let page: Page;
+
+    try {
+      page = await Promise.race([
+        this.browser.newPage(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Timed out creating a new page")),
+            config.pageCreateTimeout
+          )
+        ),
+      ]);
+    } catch (error) {
+      console.error("Error creating a new page:", error);
+      throw new Error("Failed to create a new browser tab");
+    }
+
+    await page.setViewport({
+      width: config.viewportWidth,
+      height: config.viewportHeight,
+      deviceScaleFactor: 1,
+    });
+
+    try {
+      await page.setContent(htmlContent, {
+        waitUntil: "domcontentloaded",
+        timeout: config.pageLoadTimeout,
+      });
+      console.log("Content set successfully for session", sessionId);
+    } catch (error) {
+      console.error("Error setting page content:", error);
+      throw new Error("Failed to set page content");
+    }
+
+    this.sessions.set(sessionId, page);
+    return page;
+  }
+
   /** Stores a pre-existing page under the given session ID. */
   setSession(sessionId: string, page: Page): void {
     this.sessions.set(sessionId, page);

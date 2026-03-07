@@ -696,7 +696,8 @@
       <li><a href="#endpoints">Endpoints</a></li>
       <li><a href="#quickstart">Quick Start</a></li>
       <li><a href="#params">Parameters</a></li>
-      <li><a href="/playground.html" style="color:var(--accent);font-weight:600">Playground</a></li>
+      <li><a href="/playground.html" style="color:var(--accent);font-weight:600">Web→PDF</a></li>
+      <li><a href="/markdown-playground.html" style="color:var(--purple);font-weight:600">MD→PDF</a></li>
     </ul>
   </nav>
 
@@ -707,17 +708,20 @@
       Self-hosted · REST · Puppeteer-powered
     </div>
     <h1>
-      Convert any web page<br />
-      to a <span class="accent">PDF</span> with one request
+      Convert web pages &amp; Markdown<br />
+      to <span class="accent">PDF</span> with one request
     </h1>
     <p class="hero-desc">
-      PDFPi is a lightweight API that renders any public URL inside a headless
-      Chromium browser and returns a pixel-perfect PDF — no browser plugins
-      required.
+      PDFPi is a lightweight API that renders any public URL <em>or</em> Markdown
+      document inside a headless Chromium browser and returns a pixel-perfect PDF
+      — no browser plugins required.
     </p>
     <div class="hero-actions">
       <a href="/playground.html" class="btn btn-primary">
-        &#9654; Open Playground
+        &#9654; Web → PDF Playground
+      </a>
+      <a href="/markdown-playground.html" class="btn btn-ghost" style="border-color:var(--purple);color:var(--purple);">
+        &#128196; Markdown → PDF
       </a>
       <a href="#endpoints" class="btn btn-ghost">
         &#128196; API Reference
@@ -737,10 +741,17 @@
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">&#128196;</div>
-        <h3>PDF Generation</h3>
-        <p>Pass any URL as a query parameter and receive a link to a
+        <h3>Web → PDF</h3>
+        <p>Pass any public URL as a query parameter and receive a link to a
           high-fidelity PDF rendered by Chromium — including backgrounds, fonts,
           and layout.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#128221;</div>
+        <h3>Markdown → PDF</h3>
+        <p>POST raw Markdown and receive a beautifully styled PDF. The server
+          converts, sanitizes, and renders the document — perfect for reports,
+          READMEs, and docs.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">&#9881;</div>
@@ -831,6 +842,14 @@
         <span class="endpoint-badge badge-live">Live</span>
       </div>
       <div class="endpoint-card">
+        <span class="method post" style="background:#2d1b69;color:var(--purple);border:1px solid var(--purple)44;">POST</span>
+        <div>
+          <div class="endpoint-path">/markdown/generate</div>
+          <div class="endpoint-desc">Convert raw Markdown to a styled PDF via headless Chromium. Accepts a JSON body.</div>
+        </div>
+        <span class="endpoint-badge badge-live">Live</span>
+      </div>
+      <div class="endpoint-card">
         <span class="method get">GET</span>
         <div>
           <div class="endpoint-path">/downloads/:filename</div>
@@ -893,8 +912,9 @@
 
   <!-- PARAMS -->
   <section class="section" id="params">
-    <p class="section-title">Query-Parameter Reference</p>
-    <p class="section-sub">All parameters for <code>GET /pdf/generate</code>.</p>
+    <p class="section-title">Parameter Reference</p>
+
+    <p class="section-sub" style="margin-bottom:1.5rem;">Parameters for <code>GET /pdf/generate</code>.</p>
     <div style="overflow-x: auto;">
       <table class="params-table">
         <thead>
@@ -981,6 +1001,83 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Markdown params -->
+    <p class="section-sub" style="margin-top:2.5rem;margin-bottom:1.5rem;">Body fields for <code>POST /markdown/generate</code> (JSON).</p>
+    <div style="overflow-x: auto;">
+      <table class="params-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>markdown</code> <span class="req">required</span></td>
+            <td>string</td>
+            <td>—</td>
+            <td>Raw Markdown text to convert. Max 500 KB.</td>
+          </tr>
+          <tr>
+            <td><code>title</code> <span class="opt">optional</span></td>
+            <td>string</td>
+            <td><code>"Document"</code></td>
+            <td>PDF filename (without extension) and document title.</td>
+          </tr>
+          <tr>
+            <td><code>size</code> <span class="opt">optional</span></td>
+            <td>A3 | A4 | A5 | Legal | Letter</td>
+            <td><code>A4</code></td>
+            <td>Paper format.</td>
+          </tr>
+          <tr>
+            <td><code>landscape</code> <span class="opt">optional</span></td>
+            <td>boolean</td>
+            <td><code>false</code></td>
+            <td>Landscape orientation.</td>
+          </tr>
+          <tr>
+            <td><code>scale</code> <span class="opt">optional</span></td>
+            <td>number (70–150)</td>
+            <td><code>100</code></td>
+            <td>Rendering scale as a percentage.</td>
+          </tr>
+          <tr>
+            <td><code>printBackground</code> <span class="opt">optional</span></td>
+            <td>boolean</td>
+            <td><code>true</code></td>
+            <td>Include CSS backgrounds.</td>
+          </tr>
+          <tr>
+            <td><code>printHeaderFooter</code> <span class="opt">optional</span></td>
+            <td>boolean</td>
+            <td><code>false</code></td>
+            <td>Show title header and page-number footer.</td>
+          </tr>
+          <tr>
+            <td><code>margin</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>0</code></td>
+            <td>Global margin (px) for all sides.</td>
+          </tr>
+          <tr>
+            <td><code>marginTop / Right / Bottom / Left</code> <span class="opt">optional</span></td>
+            <td>number ≥ 0</td>
+            <td><code>margin</code></td>
+            <td>Per-side margin overrides (px).</td>
+          </tr>
+          <tr>
+            <td><code>save</code> <span class="opt">optional</span></td>
+            <td>boolean</td>
+            <td><code>false</code></td>
+            <td>Upload the generated PDF to Google Drive.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <hr class="divider" />
@@ -988,7 +1085,7 @@
   <!-- FOOTER -->
   <footer>
     <p>
-      <strong>PDFPi – Web-to-PDF API</strong> &nbsp;·&nbsp;
+      <strong>PDFPi – Web &amp; Markdown to PDF API</strong> &nbsp;·&nbsp;
       MIT License &nbsp;·&nbsp;
       Built with <a href="https://expressjs.com/" target="_blank" rel="noopener noreferrer">Express</a>
       &amp; <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer">Puppeteer</a>
