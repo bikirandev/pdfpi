@@ -75,7 +75,9 @@ const validateMarkdownBody = (body: TObj) => {
 
   // --- printBackground ---
   if (body.printBackground !== undefined) {
-    parsed.printBackground = body.printBackground !== false && body.printBackground !== "false";
+    parsed.printBackground = body.printBackground === true || body.printBackground === "true";
+  } else {
+    parsed.printBackground = true; // default: on
   }
 
   // --- printHeaderFooter ---

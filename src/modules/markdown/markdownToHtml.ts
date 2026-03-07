@@ -221,7 +221,12 @@ ${safeHtml}
 </html>`;
 }
 
-/** Escapes `<`, `>`, `&`, `"`, and `'` for safe HTML attribute / text use. */
+/**
+ * Escapes `<`, `>`, `&`, `"`, and `'` so that the document title can be
+ * safely interpolated into the HTML template's `<title>` tag and attribute
+ * values.  This is distinct from `sanitize-html`, which sanitizes the
+ * rendered Markdown body.
+ */
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
