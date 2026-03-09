@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Markdown Playground – PDFPi</title>
     <style>
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -18,28 +16,30 @@
             --bg: #0d1117;
             --surface: #161b22;
             --surface2: #1c2230;
+            --surface3: #21262d;
             --border: #30363d;
             --accent: #58a6ff;
-            --accent-dim: #1f6feb33;
+            --accent-dim: #1f6feb22;
             --accent-hover: #79b8ff;
             --green: #3fb950;
+            --green-dim: #238636;
+            --green-border: #2ea043;
             --purple: #bc8cff;
             --yellow: #e3b341;
             --red: #f85149;
             --text: #e6edf3;
             --text-muted: #8b949e;
-            --radius: 8px;
-            --radius-lg: 12px;
+            --text-subtle: #6e7681;
+            --radius: 6px;
+            --radius-lg: 10px;
             --font: "Segoe UI", system-ui, -apple-system, sans-serif;
             --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
             --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+            --sidebar-w: 296px;
         }
 
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
-
+        /* ── SCROLLBAR ── */
+        * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
         *::-webkit-scrollbar { width: 6px; height: 6px; }
         *::-webkit-scrollbar-track { background: transparent; }
         *::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -53,21 +53,25 @@
             color: var(--text);
             line-height: 1.6;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* NAV */
+        /* ── NAV ── */
         nav {
             position: sticky;
             top: 0;
-            z-index: 100;
-            background: rgba(13, 17, 23, .85);
+            z-index: 200;
+            background: rgba(13, 17, 23, .92);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
+            padding: 0 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 60px;
+            height: 56px;
+            flex-shrink: 0;
         }
 
         .nav-brand {
@@ -80,181 +84,264 @@
             gap: .5rem;
         }
 
-        .nav-brand span.badge {
+        .nav-badge {
             background: var(--accent);
             color: #0d1117;
-            font-size: .65rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 4px;
-            letter-spacing: .5px;
+            font-size: .6rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: .06em;
             text-transform: uppercase;
         }
 
         .nav-links {
             list-style: none;
             display: flex;
-            gap: 1.5rem;
+            gap: .25rem;
             align-items: center;
         }
 
         .nav-links a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: .9rem;
-            transition: color .15s;
+            font-size: .875rem;
+            padding: .35rem .75rem;
+            border-radius: var(--radius);
+            transition: color .15s, background .15s;
         }
 
-        .nav-links a:hover { color: var(--text); }
+        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,.05); }
+        .nav-links a.active { color: var(--accent); background: var(--accent-dim); font-weight: 600; }
 
-        /* MAIN LAYOUT */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
+        /* ── PAGE HEADER ── */
         .page-header {
-            margin-bottom: 2rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
-        .page-header h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: .4rem;
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #1f6feb, #58a6ff, #bc8cff, #58a6ff, #1f6feb);
+            background-size: 300%;
+            animation: shimmer 4s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% }
+            100% { background-position: 300% }
+        }
+
+        .header-inner {
             display: flex;
             align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .endpoint-pill {
+            display: inline-flex;
+            align-items: center;
             gap: .5rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .3rem .85rem;
+            flex-shrink: 0;
         }
 
-        .page-header p {
-            color: var(--text-muted);
-            font-size: .95rem;
-        }
-
-        .method-badge {
+        .method-tag {
             font-family: var(--mono);
-            font-size: .75rem;
+            font-size: .68rem;
+            font-weight: 700;
             background: #1a3a5c;
             color: #79c0ff;
             border: 1px solid #1f6feb55;
+            border-radius: 3px;
+            padding: 2px 6px;
+            letter-spacing: .03em;
+        }
+
+        .endpoint-path {
+            font-family: var(--mono);
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
+        .header-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .header-desc {
+            font-size: .82rem;
+            color: var(--text-muted);
+            margin-top: .1rem;
+        }
+
+        /* ── WORKSPACE ── */
+        .workspace {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        /* ── EDITOR AREA ── */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            border-right: 1px solid var(--border);
+        }
+
+        /* ── EDITOR TOOLBAR ── */
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            gap: .2rem;
+            padding: .4rem .75rem;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: .1rem;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: var(--text-muted);
             border-radius: 4px;
-            padding: 3px 8px;
+            padding: .22rem .48rem;
+            font-size: .78rem;
             font-weight: 600;
+            cursor: pointer;
+            font-family: var(--mono);
+            transition: color .12s, background .12s, border-color .12s;
+            min-width: 26px;
+            text-align: center;
+            line-height: 1.4;
         }
 
-        /* PLAYGROUND GRID */
-        .playground {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 1.5rem;
-            align-items: start;
+        .toolbar-btn:hover {
+            color: var(--text);
+            background: rgba(255,255,255,.09);
+            border-color: var(--border);
         }
 
-        @media (max-width: 900px) {
-            .playground {
-                grid-template-columns: 1fr;
-            }
+        .toolbar-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+            margin: 0 .3rem;
+            flex-shrink: 0;
         }
 
-        /* PANELS */
-        .panel {
+        .toolbar-spacer { flex: 1; min-width: .5rem; }
+
+        .toolbar-btn-italic { font-style: italic; }
+        .toolbar-btn-strike { text-decoration: line-through; }
+
+        /* VIEW MODE TOGGLE */
+        .view-mode-group {
+            display: flex;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
+            border-radius: 5px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
-        .panel-header {
-            padding: .75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--surface2);
-        }
-
-        .panel-title {
-            font-size: .85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .panel-body {
-            padding: 1.25rem;
-        }
-
-        /* MARKDOWN EDITOR */
-        .editor-tabs {
-            display: flex;
-            gap: 0;
-            border-bottom: 1px solid var(--border);
-            background: var(--surface2);
-        }
-
-        .tab-btn {
-            padding: .6rem 1.25rem;
+        .view-btn {
             background: none;
             border: none;
             color: var(--text-muted);
-            font-size: .85rem;
+            padding: .22rem .6rem;
+            font-size: .76rem;
             font-weight: 500;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: color .15s, border-color .15s;
             font-family: var(--font);
+            transition: color .12s, background .12s;
+            white-space: nowrap;
         }
 
-        .tab-btn.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
+        .view-btn + .view-btn { border-left: 1px solid var(--border); }
+        .view-btn.active { color: var(--accent); background: var(--accent-dim); font-weight: 600; }
+        .view-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,.05); }
+
+        /* ── PANES ── */
+        .panes-container {
+            flex: 1;
+            display: flex;
+            min-height: 600px;
+            overflow: hidden;
         }
 
-        .tab-btn:hover:not(.active) { color: var(--text); }
+        .pane {
+            flex: 1;
+            overflow-y: auto;
+            min-width: 0;
+        }
 
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; }
+        .pane-editor {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-divider {
+            width: 1px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
 
         #markdownInput {
+            flex: 1;
             width: 100%;
-            min-height: 420px;
+            height: 100%;
+            min-height: 600px;
             background: var(--bg);
             color: var(--text);
             border: none;
-            padding: 1.25rem;
+            padding: 1.25rem 1.5rem;
             font-family: var(--mono);
             font-size: .875rem;
-            line-height: 1.6;
-            resize: vertical;
+            line-height: 1.75;
+            resize: none;
             outline: none;
+            tab-size: 2;
         }
 
+        /* ── PREVIEW STYLES ── */
         #htmlPreview {
-            min-height: 420px;
-            padding: 1.25rem;
-            background: #fff;
+            padding: 1.5rem 2rem;
+            background: #ffffff;
             color: #24292f;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            font-size: .9rem;
-            line-height: 1.65;
-            overflow-y: auto;
+            font-size: .925rem;
+            line-height: 1.7;
+            min-height: 600px;
         }
 
-        #htmlPreview h1, #htmlPreview h2 {
-            border-bottom: 1px solid #d0d7de;
-            padding-bottom: .3em;
-            margin: 1.2em 0 .5em;
-            font-size: 1.3em;
-        }
-        #htmlPreview h3, #htmlPreview h4, #htmlPreview h5, #htmlPreview h6 {
-            margin: 1em 0 .4em;
-        }
-        #htmlPreview p { margin-bottom: .75em; }
+        #htmlPreview h1 { font-size: 1.6em; border-bottom: 2px solid #d0d7de; padding-bottom: .3em; margin: 1.5em 0 .6em; }
+        #htmlPreview h2 { font-size: 1.3em; border-bottom: 1px solid #d0d7de; padding-bottom: .25em; margin: 1.4em 0 .5em; }
+        #htmlPreview h3, #htmlPreview h4, #htmlPreview h5, #htmlPreview h6 { margin: 1.2em 0 .4em; }
+        #htmlPreview p { margin-bottom: .9em; }
         #htmlPreview code {
             font-family: var(--mono);
             font-size: .85em;
@@ -267,286 +354,430 @@
             background: #f6f8fa;
             border: 1px solid #d0d7de;
             border-radius: 6px;
-            padding: .75em 1em;
+            padding: 1em 1.25em;
             overflow-x: auto;
-            margin: .75em 0;
+            margin: .9em 0;
         }
         #htmlPreview pre code { background: none; border: none; padding: 0; }
         #htmlPreview blockquote {
-            border-left: 4px solid #d0d7de;
-            padding: .3em 1em;
+            border-left: 4px solid #0969da;
+            padding: .4em 1em;
             color: #57606a;
-            margin: .75em 0;
+            margin: .9em 0;
+            background: #f6f8fa;
+            border-radius: 0 4px 4px 0;
         }
-        #htmlPreview table { border-collapse: collapse; width: 100%; margin: .75em 0; font-size: .875em; }
-        #htmlPreview th, #htmlPreview td { border: 1px solid #d0d7de; padding: .4em .65em; }
+        #htmlPreview table { border-collapse: collapse; width: 100%; margin: .9em 0; font-size: .875em; }
+        #htmlPreview th, #htmlPreview td { border: 1px solid #d0d7de; padding: .5em .75em; }
         #htmlPreview thead th { background: #f6f8fa; font-weight: 600; }
-        #htmlPreview ul, #htmlPreview ol { margin: .4em 0 .75em 1.5em; }
-        #htmlPreview li { margin-bottom: .2em; }
+        #htmlPreview ul, #htmlPreview ol { margin: .4em 0 .9em 1.75em; }
+        #htmlPreview li { margin-bottom: .3em; }
         #htmlPreview a { color: #0969da; }
-        #htmlPreview hr { border: none; border-top: 1px solid #d0d7de; margin: 1em 0; }
+        #htmlPreview hr { border: none; border-top: 1px solid #d0d7de; margin: 1.25em 0; }
+        #htmlPreview img { max-width: 100%; border-radius: 4px; }
 
-        /* OPTIONS PANEL */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: .8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            margin-bottom: .4rem;
-        }
-
-        .form-group input[type="text"],
-        .form-group select {
-            width: 100%;
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: .5rem .75rem;
-            font-size: .9rem;
-            font-family: var(--font);
-            outline: none;
-            transition: border-color .15s;
-        }
-
-        .form-group input[type="text"]:focus,
-        .form-group select:focus {
-            border-color: var(--accent);
-        }
-
-        .form-group input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent);
-        }
-
-        .range-display {
-            font-size: .8rem;
-            color: var(--accent);
-            font-weight: 600;
-            font-family: var(--mono);
-            text-align: right;
-            margin-top: .2rem;
-        }
-
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-            margin-bottom: .6rem;
-        }
-
-        .toggle-row label {
-            font-size: .875rem;
-            color: var(--text);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .toggle-row input[type="checkbox"] {
-            width: 14px;
-            height: 14px;
-            accent-color: var(--accent);
-            cursor: pointer;
+        /* ── RESULT BOX ── */
+        .result-box {
+            display: none;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .85rem 1.25rem;
+            border-top: 3px solid var(--border);
             flex-shrink: 0;
         }
 
-        .margin-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: .5rem;
-        }
+        .result-box.visible { display: flex; }
+        .result-box.success { border-top-color: var(--green); background: rgba(63, 185, 80, .06); }
+        .result-box.error { border-top-color: var(--red); background: rgba(248, 81, 73, .06); }
 
-        .margin-item label {
-            font-size: .75rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: .2rem;
-            display: block;
-        }
-
-        .margin-item input {
-            width: 100%;
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: .4rem .6rem;
-            font-size: .85rem;
-            font-family: var(--mono);
-            outline: none;
-        }
-
-        .margin-item input:focus { border-color: var(--accent); }
-
-        .divider-sm {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 1rem 0;
-        }
-
-        /* API KEY */
-        #apiKeySection {
-            display: none;
-        }
-
-        /* BUTTON */
-        .btn-generate {
-            width: 100%;
-            padding: .75rem;
-            background: var(--accent);
-            color: #0d1117;
-            border: none;
-            border-radius: var(--radius);
-            font-size: .95rem;
+        .result-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .78rem;
             font-weight: 700;
-            cursor: pointer;
-            transition: background .15s, transform .1s;
-            font-family: var(--font);
-            margin-top: .25rem;
+            flex-shrink: 0;
+            margin-top: .05rem;
         }
 
-        .btn-generate:hover { background: var(--accent-hover); }
-        .btn-generate:active { transform: scale(.98); }
-        .btn-generate:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+        .success .result-icon { background: var(--green); color: #0d1117; }
+        .error .result-icon { background: var(--red); color: #fff; }
 
-        /* RESULT */
-        .result-box {
-            margin-top: 1.25rem;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1rem;
-            display: none;
-        }
-
-        .result-box.visible { display: block; }
-
-        .result-box.success { border-color: var(--green); }
-        .result-box.error   { border-color: var(--red); }
+        .result-content { flex: 1; min-width: 0; }
 
         .result-status {
-            font-size: .8rem;
+            font-size: .75rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .5px;
-            margin-bottom: .5rem;
+            margin-bottom: .25rem;
         }
 
         .result-status.success { color: var(--green); }
-        .result-status.error   { color: var(--red); }
+        .result-status.error { color: var(--red); }
+
+        #resultMessage { font-size: .875rem; color: var(--text); }
 
         .result-links {
             display: flex;
-            flex-direction: column;
-            gap: .4rem;
+            flex-wrap: wrap;
+            gap: .5rem;
             margin-top: .6rem;
         }
 
         .result-link-row {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: .5rem;
+            gap: .4rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .25rem .5rem .25rem .75rem;
         }
 
         .result-link-row a {
             color: var(--accent);
-            font-size: .85rem;
+            font-size: .82rem;
             text-decoration: none;
-            word-break: break-all;
         }
 
         .result-link-row a:hover { text-decoration: underline; }
 
         .copy-btn {
-            background: var(--surface);
-            color: var(--text-muted);
+            background: transparent;
+            color: var(--text-subtle);
             border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 2px 8px;
-            font-size: .75rem;
+            padding: 1px 7px;
+            font-size: .72rem;
             cursor: pointer;
-            flex-shrink: 0;
             font-family: var(--font);
-            transition: color .15s, border-color .15s;
+            transition: color .12s, border-color .12s;
+            white-space: nowrap;
         }
 
         .copy-btn:hover { color: var(--text); border-color: var(--text-muted); }
 
-        /* CODE BLOCK */
-        .code-block {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1rem 1.25rem;
-            font-family: var(--mono);
-            font-size: .8rem;
-            line-height: 1.6;
-            color: var(--text-muted);
-            overflow-x: auto;
-            white-space: pre;
-            margin-top: 1rem;
+        /* ── cURL SECTION ── */
+        .curl-section {
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
-        .code-block .k { color: #ff7b72; }
-        .code-block .s { color: #a5d6ff; }
-        .code-block .n { color: var(--green); }
-        .code-block .c { color: var(--text-muted); font-style: italic; }
-        .code-block .v { color: var(--yellow); }
+        .curl-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .55rem 1.25rem;
+            background: var(--surface2);
+            cursor: pointer;
+            user-select: none;
+            transition: background .12s;
+        }
 
-        /* SPINNER */
-        .spinner {
-            display: none;
+        .curl-header:hover { background: var(--surface3); }
+
+        .curl-title {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .curl-actions {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .curl-toggle-icon {
+            color: var(--text-subtle);
+            font-size: .75rem;
+            transition: transform .2s;
+        }
+
+        .curl-toggle-icon.rotated { transform: rotate(-90deg); }
+
+        .curl-body {
+            overflow: hidden;
+            transition: max-height .25s ease;
+            max-height: 300px;
+        }
+
+        .curl-body.collapsed { max-height: 0; }
+
+        .curl-copy-bar {
+            display: flex;
+            justify-content: flex-end;
+            padding: .3rem .75rem;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        #curlBlock {
+            background: var(--bg);
+            font-family: var(--mono);
+            font-size: .78rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            padding: .85rem 1.5rem;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 0;
+            border: none;
+        }
+
+        #curlBlock .k { color: #ff7b72; }
+        #curlBlock .s { color: #a5d6ff; }
+        #curlBlock .n { color: var(--green); }
+        #curlBlock .c { color: var(--text-muted); font-style: italic; }
+        #curlBlock .v { color: var(--yellow); }
+
+        /* ── OPTIONS SIDEBAR ── */
+        .options-sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: .65rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: .78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-body {
+            padding: .85rem .9rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* ── FORM SECTIONS ── */
+        .form-section { margin-bottom: .5rem; }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-subtle);
+            margin-bottom: .55rem;
+            padding-bottom: .35rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-row { margin-bottom: .55rem; }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .77rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: .28rem;
+        }
+
+        .form-label-val {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .42rem .6rem;
+            font-size: .84rem;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, .1);
+        }
+
+        .form-select { cursor: pointer; }
+
+        .form-range {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            margin-top: .15rem;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .28rem 0;
+        }
+
+        .toggle-item input[type="checkbox"] {
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(0,0,0,.3);
-            border-top-color: #0d1117;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .toggle-item label {
+            font-size: .83rem;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .margin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .4rem;
+        }
+
+        .margin-field label {
+            display: block;
+            font-size: .71rem;
+            color: var(--text-subtle);
+            margin-bottom: .18rem;
+        }
+
+        .margin-field input {
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .35rem .5rem;
+            font-size: .82rem;
+            font-family: var(--mono);
+            outline: none;
+            transition: border-color .15s;
+            text-align: center;
+        }
+
+        .margin-field input:focus { border-color: var(--accent); }
+
+        /* ── AUTH/DRIVE ── */
+        #apiKeySection { display: none; }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: .65rem 0;
+        }
+
+        /* ── GENERATE BUTTON AREA ── */
+        .generate-area {
+            padding: .85rem .9rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: .68rem 1rem;
+            background: var(--green-dim);
+            color: #e6edf3;
+            border: 1px solid var(--green-border);
+            border-radius: var(--radius);
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s, box-shadow .15s, transform .1s;
+            font-family: var(--font);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            letter-spacing: .01em;
+        }
+
+        .btn-generate:hover {
+            background: #2ea043;
+            box-shadow: 0 0 0 3px rgba(46, 160, 67, .2);
+        }
+
+        .btn-generate:active { transform: scale(.98); }
+        .btn-generate:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ── SPINNER ── */
+        .spinner {
+            display: none;
+            width: 13px;
+            height: 13px;
+            border: 2px solid rgba(230, 237, 243, .3);
+            border-top-color: var(--text);
             border-radius: 50%;
             animation: spin .6s linear infinite;
-            vertical-align: middle;
-            margin-right: .4rem;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading .spinner { display: inline-block; }
 
-        /* SECTION LABEL */
-        .section-label {
-            font-size: .75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: var(--text-muted);
-            margin-bottom: .75rem;
-            display: flex;
-            align-items: center;
-            gap: .4rem;
-        }
-
-        .section-label::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* FOOTER */
+        /* ── FOOTER ── */
         footer {
             border-top: 1px solid var(--border);
-            padding: 1.5rem 2rem;
+            padding: .9rem 1.5rem;
             text-align: center;
-            color: var(--text-muted);
-            font-size: .82rem;
-            margin-top: 3rem;
+            color: var(--text-subtle);
+            font-size: .79rem;
+            flex-shrink: 0;
         }
 
         footer a { color: var(--accent); text-decoration: none; }
         footer a:hover { text-decoration: underline; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 860px) {
+            .workspace { flex-direction: column; }
+            .editor-area { border-right: none; border-bottom: 1px solid var(--border); }
+            .options-sidebar { width: 100%; }
+            .panes-container { flex-direction: column; }
+            .pane-divider { width: 100%; height: 1px; }
+            #markdownInput { min-height: 320px; }
+            #htmlPreview { min-height: 320px; }
+        }
+
+        @media (max-width: 520px) {
+            .nav-links { gap: 0; }
+            .header-inner { gap: .75rem; }
+            .editor-toolbar { gap: .15rem; }
+            .toolbar-divider { display: none; }
+        }
     </style>
 </head>
 
@@ -555,36 +786,68 @@
     <nav>
         <a class="nav-brand" href="/">
             PDFPi
-            <span class="badge">API</span>
+            <span class="nav-badge">API</span>
         </a>
         <ul class="nav-links">
             <li><a href="/">Home</a></li>
             <li><a href="/playground.html">Web → PDF</a></li>
-            <li><a href="/markdown-playground.html" style="color:var(--accent);font-weight:600">Markdown → PDF</a></li>
+            <li><a href="/markdown-playground.html" class="active">Markdown → PDF</a></li>
         </ul>
     </nav>
 
-    <div class="container">
-        <!-- HEADER -->
-        <div class="page-header">
-            <h1>
-                <span class="method-badge">POST</span>
-                /markdown/generate
-            </h1>
-            <p>Convert a Markdown document to a high-fidelity PDF. Paste your Markdown below, configure output options, and click Generate.</p>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="header-inner">
+            <div class="endpoint-pill">
+                <span class="method-tag">POST</span>
+                <span class="endpoint-path">/markdown/generate</span>
+            </div>
+            <div class="header-text-group">
+                <div class="header-title">Markdown → PDF Playground</div>
+                <div class="header-desc">Write Markdown, configure options, and generate a polished PDF — no URL required.</div>
+            </div>
         </div>
+    </div>
 
-        <div class="playground">
-            <!-- LEFT: EDITOR + RESULT -->
-            <div>
-                <div class="panel">
-                    <div class="editor-tabs">
-                        <button class="tab-btn active" onclick="switchTab('editor')">✏️ Markdown Editor</button>
-                        <button class="tab-btn" onclick="switchTab('preview')">👁 Preview</button>
-                    </div>
+    <!-- WORKSPACE -->
+    <div class="workspace">
 
-                    <div id="tab-editor" class="tab-pane active">
-                        <textarea id="markdownInput" placeholder="# Hello World
+        <!-- LEFT: EDITOR AREA -->
+        <div class="editor-area">
+
+            <!-- TOOLBAR -->
+            <div class="editor-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" title="Bold" onclick="insertFormat('**','**')"><strong>B</strong></button>
+                    <button class="toolbar-btn toolbar-btn-italic" title="Italic" onclick="insertFormat('*','*')">I</button>
+                    <button class="toolbar-btn toolbar-btn-strike" title="Strikethrough" onclick="insertFormat('~~','~~')">S</button>
+                </div>
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" title="Heading 1" onclick="insertLine('# ')">H1</button>
+                    <button class="toolbar-btn" title="Heading 2" onclick="insertLine('## ')">H2</button>
+                    <button class="toolbar-btn" title="Heading 3" onclick="insertLine('### ')">H3</button>
+                </div>
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" title="Inline code" onclick="insertFormat('`','`')">&lt;/&gt;</button>
+                    <button class="toolbar-btn" title="Code block" onclick="insertCodeBlock()">```</button>
+                    <button class="toolbar-btn" title="Blockquote" onclick="insertLine('> ')">❝</button>
+                    <button class="toolbar-btn" title="Unordered list" onclick="insertLine('- ')">• List</button>
+                    <button class="toolbar-btn" title="Link" onclick="insertLink()">🔗</button>
+                </div>
+                <div class="toolbar-spacer"></div>
+                <div class="view-mode-group">
+                    <button class="view-btn active" id="viewEditor" onclick="setViewMode('editor')">Edit</button>
+                    <button class="view-btn" id="viewSplit" onclick="setViewMode('split')">Split</button>
+                    <button class="view-btn" id="viewPreview" onclick="setViewMode('preview')">Preview</button>
+                </div>
+            </div>
+
+            <!-- PANES -->
+            <div class="panes-container" id="panesContainer">
+                <div class="pane pane-editor" id="paneEditor">
+                    <textarea id="markdownInput" placeholder="# Hello World
 
 Write your **Markdown** here.
 
@@ -613,139 +876,162 @@ function greet(name) {
 
 > **Note:** This PDF is generated entirely from Markdown — no URL required.
 "></textarea>
-                    </div>
-
-                    <div id="tab-preview" class="tab-pane">
-                        <div id="htmlPreview"></div>
-                    </div>
                 </div>
+                <div class="pane-divider" id="paneDivider" style="display:none;"></div>
+                <div class="pane" id="panePreview" style="display:none;">
+                    <div id="htmlPreview"></div>
+                </div>
+            </div>
 
-                <!-- RESULT -->
-                <div class="result-box" id="resultBox">
+            <!-- RESULT BOX -->
+            <div class="result-box" id="resultBox">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-content">
                     <div class="result-status" id="resultStatus"></div>
                     <div id="resultMessage"></div>
                     <div class="result-links" id="resultLinks"></div>
                 </div>
+            </div>
 
-                <!-- CURL EXAMPLE -->
-                <div class="panel" style="margin-top:1.25rem;">
-                    <div class="panel-header">
-                        <span class="panel-title">⌨️ cURL Example</span>
-                        <button class="copy-btn" onclick="copyCurl()">Copy</button>
+            <!-- cURL SECTION -->
+            <div class="curl-section">
+                <div class="curl-header" onclick="toggleCurl()">
+                    <span class="curl-title">⌨️&nbsp; cURL Example</span>
+                    <div class="curl-actions">
+                        <span class="curl-toggle-icon" id="curlToggleIcon">▾</span>
                     </div>
-                    <div class="panel-body" style="padding:0;">
-                        <pre class="code-block" id="curlBlock" style="margin:0;border:none;border-radius:0;"></pre>
+                </div>
+                <div class="curl-body" id="curlBody">
+                    <div class="curl-copy-bar">
+                        <button class="copy-btn" onclick="copyCurl(); event.stopPropagation();">Copy</button>
                     </div>
+                    <pre id="curlBlock"></pre>
                 </div>
             </div>
 
-            <!-- RIGHT: OPTIONS + GENERATE -->
-            <div>
-                <div class="panel">
-                    <div class="panel-header">
-                        <span class="panel-title">⚙️ PDF Options</span>
+        </div><!-- /editor-area -->
+
+        <!-- RIGHT: OPTIONS SIDEBAR -->
+        <aside class="options-sidebar">
+            <div class="sidebar-header">
+                <span>⚙️</span>
+                <span class="sidebar-title">PDF Options</span>
+            </div>
+
+            <div class="sidebar-body">
+
+                <!-- AUTH (hidden by default) -->
+                <div id="apiKeySection">
+                    <div class="form-section">
+                        <div class="section-heading">🔑 Authentication</div>
+                        <div class="form-row">
+                            <div class="form-label">API Key</div>
+                            <input type="text" class="form-input" id="apiKeyInput" placeholder="your-api-key" oninput="updateCurl()" />
+                        </div>
                     </div>
-                    <div class="panel-body">
+                    <hr class="sidebar-divider" />
+                </div>
 
-                        <!-- API Key -->
-                        <div id="apiKeySection">
-                            <div class="section-label">Authentication</div>
-                            <div class="form-group">
-                                <label for="apiKeyInput">API Key</label>
-                                <input type="text" id="apiKeyInput" placeholder="your-api-key" oninput="updateCurl()" />
-                            </div>
-                            <hr class="divider-sm" />
+                <!-- DOCUMENT -->
+                <div class="form-section">
+                    <div class="section-heading">📄 Document</div>
+                    <div class="form-row">
+                        <div class="form-label">Title (filename)</div>
+                        <input type="text" class="form-input" id="titleInput" value="My-Document" oninput="updateCurl()" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-label">Paper Size</div>
+                        <select class="form-select" id="sizeSelect" onchange="updateCurl()">
+                            <option value="A4" selected>A4</option>
+                            <option value="A3">A3</option>
+                            <option value="A5">A5</option>
+                            <option value="Letter">Letter</option>
+                            <option value="Legal">Legal</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-label">
+                            Scale
+                            <span class="form-label-val"><span id="scaleVal">100</span>%</span>
                         </div>
-
-                        <!-- Title -->
-                        <div class="section-label">Document</div>
-                        <div class="form-group">
-                            <label for="titleInput">Title (filename)</label>
-                            <input type="text" id="titleInput" value="My-Document" oninput="updateCurl()" />
-                        </div>
-
-                        <!-- Paper size -->
-                        <div class="form-group">
-                            <label for="sizeSelect">Paper size</label>
-                            <select id="sizeSelect" onchange="updateCurl()">
-                                <option value="A4" selected>A4</option>
-                                <option value="A3">A3</option>
-                                <option value="A5">A5</option>
-                                <option value="Letter">Letter</option>
-                                <option value="Legal">Legal</option>
-                            </select>
-                        </div>
-
-                        <!-- Scale -->
-                        <div class="form-group">
-                            <label for="scaleRange">Scale: <span id="scaleVal">100</span>%</label>
-                            <input type="range" id="scaleRange" min="70" max="150" value="100" oninput="document.getElementById('scaleVal').textContent=this.value; updateCurl();" />
-                        </div>
-
-                        <hr class="divider-sm" />
-                        <div class="section-label">Rendering</div>
-
-                        <div class="toggle-row">
-                            <input type="checkbox" id="landscapeCheck" onchange="updateCurl()" />
-                            <label for="landscapeCheck">Landscape orientation</label>
-                        </div>
-                        <div class="toggle-row">
-                            <input type="checkbox" id="bgCheck" checked onchange="updateCurl()" />
-                            <label for="bgCheck">Print background</label>
-                        </div>
-                        <div class="toggle-row">
-                            <input type="checkbox" id="hfCheck" onchange="updateCurl()" />
-                            <label for="hfCheck">Header &amp; footer</label>
-                        </div>
-
-                        <hr class="divider-sm" />
-                        <div class="section-label">Margins (px)</div>
-
-                        <div class="margin-grid">
-                            <div class="margin-item">
-                                <label>Top</label>
-                                <input type="number" id="marginTop" min="0" value="40" oninput="updateCurl()" />
-                            </div>
-                            <div class="margin-item">
-                                <label>Right</label>
-                                <input type="number" id="marginRight" min="0" value="48" oninput="updateCurl()" />
-                            </div>
-                            <div class="margin-item">
-                                <label>Bottom</label>
-                                <input type="number" id="marginBottom" min="0" value="40" oninput="updateCurl()" />
-                            </div>
-                            <div class="margin-item">
-                                <label>Left</label>
-                                <input type="number" id="marginLeft" min="0" value="48" oninput="updateCurl()" />
-                            </div>
-                        </div>
-
-                        <!-- Google Drive -->
-                        <div id="driveSection" style="display:none;">
-                            <hr class="divider-sm" />
-                            <div class="section-label">Google Drive</div>
-                            <div class="toggle-row">
-                                <input type="checkbox" id="saveCheck" onchange="updateCurl()" />
-                                <label for="saveCheck">Save to Google Drive</label>
-                            </div>
-                        </div>
-
-                        <hr class="divider-sm" />
-
-                        <button class="btn-generate" id="generateBtn" onclick="generatePdf()">
-                            <span class="spinner" id="spinner"></span>
-                            ▶ Generate PDF
-                        </button>
-
+                        <input type="range" class="form-range" id="scaleRange" min="70" max="150" value="100"
+                            oninput="document.getElementById('scaleVal').textContent=this.value; updateCurl();" />
                     </div>
                 </div>
+
+                <hr class="sidebar-divider" />
+
+                <!-- RENDERING -->
+                <div class="form-section">
+                    <div class="section-heading">🖨️ Rendering</div>
+                    <div class="toggle-item">
+                        <input type="checkbox" id="landscapeCheck" onchange="updateCurl()" />
+                        <label for="landscapeCheck">Landscape orientation</label>
+                    </div>
+                    <div class="toggle-item">
+                        <input type="checkbox" id="bgCheck" checked onchange="updateCurl()" />
+                        <label for="bgCheck">Print background</label>
+                    </div>
+                    <div class="toggle-item">
+                        <input type="checkbox" id="hfCheck" onchange="updateCurl()" />
+                        <label for="hfCheck">Header &amp; footer</label>
+                    </div>
+                </div>
+
+                <hr class="sidebar-divider" />
+
+                <!-- MARGINS -->
+                <div class="form-section">
+                    <div class="section-heading">📐 Margins (px)</div>
+                    <div class="margin-grid">
+                        <div class="margin-field">
+                            <label>Top</label>
+                            <input type="number" id="marginTop" min="0" value="40" oninput="updateCurl()" />
+                        </div>
+                        <div class="margin-field">
+                            <label>Right</label>
+                            <input type="number" id="marginRight" min="0" value="48" oninput="updateCurl()" />
+                        </div>
+                        <div class="margin-field">
+                            <label>Bottom</label>
+                            <input type="number" id="marginBottom" min="0" value="40" oninput="updateCurl()" />
+                        </div>
+                        <div class="margin-field">
+                            <label>Left</label>
+                            <input type="number" id="marginLeft" min="0" value="48" oninput="updateCurl()" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GOOGLE DRIVE (hidden by default) -->
+                <div id="driveSection" style="display:none;">
+                    <hr class="sidebar-divider" />
+                    <div class="form-section">
+                        <div class="section-heading">☁️ Google Drive</div>
+                        <div class="toggle-item">
+                            <input type="checkbox" id="saveCheck" onchange="updateCurl()" />
+                            <label for="saveCheck">Save to Google Drive</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /sidebar-body -->
+
+            <!-- GENERATE BUTTON -->
+            <div class="generate-area">
+                <button class="btn-generate" id="generateBtn" onclick="generatePdf()">
+                    <span class="spinner" id="spinner"></span>
+                    ▶&nbsp; Generate PDF
+                </button>
             </div>
-        </div>
-    </div>
+        </aside>
+
+    </div><!-- /workspace -->
 
     <footer>
         <p>
-            <strong>PDFPi – Markdown-to-PDF API</strong> &nbsp;·&nbsp;
+            <strong>PDFPi</strong> &nbsp;·&nbsp;
+            Markdown-to-PDF API &nbsp;·&nbsp;
             MIT License &nbsp;·&nbsp;
             <a href="/">Home</a> &nbsp;·&nbsp;
             <a href="/playground.html">Web → PDF Playground</a>
@@ -823,40 +1109,127 @@ function greet(name) {
             updateCurl();
         })();
 
-        // ── Tab switch ────────────────────────────────────────────────────────
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if (tab === 'preview') {
+        // ── View Mode ─────────────────────────────────────────────────────────
+        function setViewMode(mode) {
+            const editor  = document.getElementById('paneEditor');
+            const preview = document.getElementById('panePreview');
+            const divider = document.getElementById('paneDivider');
+
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            const btnId = 'view' + mode.charAt(0).toUpperCase() + mode.slice(1);
+            document.getElementById(btnId).classList.add('active');
+
+            if (mode === 'editor') {
+                editor.style.display  = 'flex';
+                preview.style.display = 'none';
+                divider.style.display = 'none';
+            } else if (mode === 'preview') {
+                editor.style.display  = 'none';
+                preview.style.display = 'block';
+                divider.style.display = 'none';
+                document.getElementById('htmlPreview').innerHTML =
+                    simpleMarkdown(document.getElementById('markdownInput').value);
+            } else { // split
+                editor.style.display  = 'flex';
+                preview.style.display = 'block';
+                divider.style.display = 'block';
                 document.getElementById('htmlPreview').innerHTML =
                     simpleMarkdown(document.getElementById('markdownInput').value);
             }
         }
 
+        // Keep old switchTab for compatibility
+        function switchTab(tab) {
+            setViewMode(tab === 'editor' ? 'editor' : 'preview');
+        }
+
+        // ── cURL collapsible ──────────────────────────────────────────────────
+        let curlOpen = true;
+        function toggleCurl() {
+            curlOpen = !curlOpen;
+            document.getElementById('curlBody').classList.toggle('collapsed', !curlOpen);
+            const icon = document.getElementById('curlToggleIcon');
+            icon.textContent = curlOpen ? '▾' : '▸';
+        }
+
+        // ── Toolbar helpers ───────────────────────────────────────────────────
+        function insertFormat(before, after) {
+            const ta = document.getElementById('markdownInput');
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            const sel   = ta.value.substring(start, end);
+            const replacement = before + (sel || 'text') + after;
+            ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+            ta.focus();
+            if (sel) {
+                ta.selectionStart = start;
+                ta.selectionEnd   = start + replacement.length;
+            } else {
+                const defaultText = 'text';
+                ta.selectionStart = start + before.length;
+                ta.selectionEnd   = start + before.length + defaultText.length;
+            }
+            updateCurl();
+        }
+
+        function insertLine(prefix) {
+            const ta = document.getElementById('markdownInput');
+            const start = ta.selectionStart;
+            const lineStart = ta.value.lastIndexOf('\n', start - 1) + 1;
+            ta.value = ta.value.substring(0, lineStart) + prefix + ta.value.substring(lineStart);
+            ta.focus();
+            ta.selectionStart = ta.selectionEnd = start + prefix.length;
+            updateCurl();
+        }
+
+        function insertCodeBlock() {
+            const ta = document.getElementById('markdownInput');
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            const sel   = ta.value.substring(start, end);
+            const defaultCode = 'code here';
+            const block = '```\n' + (sel || defaultCode) + '\n```';
+            ta.value = ta.value.substring(0, start) + block + ta.value.substring(end);
+            ta.focus();
+            const codeStart = start + 4; // skip '```\n'
+            ta.selectionStart = codeStart;
+            ta.selectionEnd   = codeStart + (sel || defaultCode).length;
+            updateCurl();
+        }
+
+        function insertLink() {
+            const ta = document.getElementById('markdownInput');
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            const sel   = ta.value.substring(start, end);
+            const link  = '[' + (sel || 'link text') + '](https://)';
+            ta.value = ta.value.substring(0, start) + link + ta.value.substring(end);
+            ta.focus();
+            updateCurl();
+        }
+
         // ── Build options object ──────────────────────────────────────────────
         function getOptions() {
             return {
-                title:              document.getElementById('titleInput').value.trim() || 'Document',
-                size:               document.getElementById('sizeSelect').value,
-                scale:              parseInt(document.getElementById('scaleRange').value),
-                landscape:          document.getElementById('landscapeCheck').checked,
-                printBackground:    document.getElementById('bgCheck').checked,
-                printHeaderFooter:  document.getElementById('hfCheck').checked,
-                marginTop:          parseInt(document.getElementById('marginTop').value) || 0,
-                marginRight:        parseInt(document.getElementById('marginRight').value) || 0,
-                marginBottom:       parseInt(document.getElementById('marginBottom').value) || 0,
-                marginLeft:         parseInt(document.getElementById('marginLeft').value) || 0,
-                save:               driveEnabled && document.getElementById('saveCheck').checked,
+                title:             document.getElementById('titleInput').value.trim() || 'Document',
+                size:              document.getElementById('sizeSelect').value,
+                scale:             parseInt(document.getElementById('scaleRange').value),
+                landscape:         document.getElementById('landscapeCheck').checked,
+                printBackground:   document.getElementById('bgCheck').checked,
+                printHeaderFooter: document.getElementById('hfCheck').checked,
+                marginTop:         parseInt(document.getElementById('marginTop').value)    || 0,
+                marginRight:       parseInt(document.getElementById('marginRight').value)  || 0,
+                marginBottom:      parseInt(document.getElementById('marginBottom').value) || 0,
+                marginLeft:        parseInt(document.getElementById('marginLeft').value)   || 0,
+                save:              driveEnabled && document.getElementById('saveCheck').checked,
             };
         }
 
         // ── Update cURL example ───────────────────────────────────────────────
         function updateCurl() {
-            const opts = getOptions();
+            const opts   = getOptions();
             const apiKey = document.getElementById('apiKeyInput')?.value.trim();
-            const base = window.location.origin;
+            const base   = window.location.origin;
             const markdownSnippet = '# Hello World\\n\\nThis is **bold** text.';
 
             let body = {
@@ -900,18 +1273,17 @@ function greet(name) {
             btn.classList.add('loading');
             hideResult();
 
-            const opts = getOptions();
+            const opts   = getOptions();
             const apiKey = document.getElementById('apiKeyInput')?.value.trim();
 
-            const body = { markdown, ...opts };
-
+            const body    = { markdown, ...opts };
             const headers = { 'Content-Type': 'application/json' };
             if (authEnabled && apiKey) {
                 headers['x-api-key'] = apiKey;
             }
 
             try {
-                const res = await fetch('/markdown/generate', {
+                const res  = await fetch('/markdown/generate', {
                     method: 'POST',
                     headers,
                     body: JSON.stringify(body),
@@ -957,15 +1329,17 @@ function greet(name) {
 
         // ── Helpers ───────────────────────────────────────────────────────────
         function showResult(type, message, links = '') {
-            const box = document.getElementById('resultBox');
-            const status = document.getElementById('resultStatus');
-            const msg = document.getElementById('resultMessage');
+            const box     = document.getElementById('resultBox');
+            const status  = document.getElementById('resultStatus');
+            const icon    = document.getElementById('resultIcon');
+            const msg     = document.getElementById('resultMessage');
             const linksEl = document.getElementById('resultLinks');
-            box.className = 'result-box visible ' + type;
+            box.className    = 'result-box visible ' + type;
             status.className = 'result-status ' + type;
             status.textContent = type === 'success' ? '✓ Success' : '✗ Error';
-            msg.innerHTML = message;
-            linksEl.innerHTML = links;
+            icon.textContent   = type === 'success' ? '✓' : '✗';
+            msg.innerHTML      = message;
+            linksEl.innerHTML  = links;
             box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
@@ -980,6 +1354,16 @@ function greet(name) {
                 setTimeout(() => btn.textContent = 'Copy', 1500);
             });
         }
+
+        // ── Live preview update ───────────────────────────────────────────────
+        document.getElementById('markdownInput').addEventListener('input', () => {
+            const preview = document.getElementById('panePreview');
+            if (preview.style.display !== 'none') {
+                document.getElementById('htmlPreview').innerHTML =
+                    simpleMarkdown(document.getElementById('markdownInput').value);
+            }
+        });
     </script>
 </body>
+
 </html>
