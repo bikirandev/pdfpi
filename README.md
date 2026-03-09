@@ -1,7 +1,7 @@
-# PDFPi – Web-to-PDF API
+# PDFPi – Web & Markdown to PDF API
 
-A self-hosted REST API that converts any public web page into a
-PDF file using a headless Chromium browser (Puppeteer).
+A self-hosted REST API that converts any public web page **or** a Markdown
+document into a PDF file using a headless Chromium browser (Puppeteer).
 
 ![PDFPi Playground](docs/thumb.png)
 
@@ -17,15 +17,17 @@ PDF file using a headless Chromium browser (Puppeteer).
    - [Production build](#production-build)
    - [Docker](#docker)
 5. [API Reference](#api-reference)
-   - [PDF generation](#get-pdfgenerate)
+   - [Web → PDF](#get-pdfgenerate)
+   - [Markdown → PDF](#post-markdowngenerate)
    - [Static file downloads](#get-downloadsfilename)
-6. [Query-parameter reference](#query-parameter-reference)
-7. [Environment variables](#environment-variables)
-8. [Project structure](#project-structure)
-9. [Security](#security)
-10. [Known limitations](#known-limitations)
-11. [Google Drive Setup](#google-drive-setup)
-12. [License](#license)
+6. [Query-parameter reference (Web → PDF)](#query-parameter-reference)
+7. [Body-field reference (Markdown → PDF)](#body-field-reference-markdown--pdf)
+8. [Environment variables](#environment-variables)
+9. [Project structure](#project-structure)
+10. [Security](#security)
+11. [Known limitations](#known-limitations)
+12. [Google Drive Setup](#google-drive-setup)
+13. [License](#license)
 
 ---
 
@@ -36,6 +38,10 @@ renders the page inside a headless Chrome instance, and returns the path to
 the generated PDF. PDFs are stored in a `downloads/` directory at the
 project root and served as static files on the `/downloads` path.
 
+PDFPi also accepts **raw Markdown** via a `POST` request. The server converts
+the Markdown to a clean, styled HTML document, sanitizes it (removing scripts
+and unsafe attributes), and renders it to PDF — no URL required.
+
 Additional features:
 
 - **Static file serving** – generated PDFs are served on the `/downloads`
@@ -43,7 +49,9 @@ Additional features:
 - **Google Drive upload** – optionally save PDFs to a Shared Drive folder
   via a built-in Setup UI or environment variables.
 - **SSRF protection** – internal/private IPs are blocked at the validation
-  layer.
+  layer for the web → PDF endpoint.
+- **Markdown sanitization** – the Markdown → PDF pipeline sanitizes HTML
+  output to strip scripts, event handlers, and unsafe URIs before rendering.
 
 ---
 
@@ -55,6 +63,7 @@ Additional features:
                     │            (port from PORT env var)            │
                     │                                                │
  Client ──HTTP──▶  │  GET  /pdf/generate          → pdf.route       │
+                    │  POST /markdown/generate     → markdown.route  │
                     │  GET  /downloads/:file       → express.static  │
                     └────────────────┬──────────────────────────────┘
                                      │
@@ -71,21 +80,24 @@ Additional features:
 
 ### Key modules
 
-| Path                                        | Responsibility                                 |
-| ------------------------------------------- | ---------------------------------------------- |
-| `src/index.ts`                              | Express + HTTP server bootstrap                |
-| `src/config.ts`                             | Centralised environment configuration          |
-| `src/middleware/apiKeyAuth.ts`              | API key authentication guard                   |
-| `src/modules/browser/browserManager.ts`     | Singleton Puppeteer browser; session lifecycle |
-| `src/modules/pdf/generatePdf.validation.ts` | Query-string validation & normalisation        |
-| `src/modules/drive/googleDriveManager.ts`   | Google Drive upload via Service Account        |
-| `src/modules/drive/driveConfigManager.ts`   | File-based Drive config persistence            |
-| `src/routes/setup.route.ts`                 | `POST /api/setup/drive` setup endpoints        |
-| `src/utils/downloadDir.ts`                  | Resolves & ensures the `downloads/` directory  |
-| `src/routes/pdf.route.ts`                   | `GET /pdf/generate` handler                    |
-| `src/middleware/globalErrorHandler.ts`      | Catches unhandled errors; returns JSON         |
-| `src/middleware/notFound.ts`                | Returns 404 JSON for unknown routes            |
-| `src/types/index.ts`                        | Shared TypeScript types                        |
+| Path                                                    | Responsibility                                 |
+| ------------------------------------------------------- | ---------------------------------------------- |
+| `src/index.ts`                                          | Express + HTTP server bootstrap                |
+| `src/config.ts`                                         | Centralised environment configuration          |
+| `src/middleware/apiKeyAuth.ts`                          | API key authentication guard                   |
+| `src/modules/browser/browserManager.ts`                 | Singleton Puppeteer browser; session lifecycle |
+| `src/modules/pdf/generatePdf.validation.ts`             | Query-string validation & normalisation        |
+| `src/modules/markdown/markdownToHtml.ts`                | Markdown → sanitized, styled HTML conversion   |
+| `src/modules/markdown/generateMarkdownPdf.validation.ts`| Request-body validation for Markdown → PDF     |
+| `src/modules/drive/googleDriveManager.ts`               | Google Drive upload via Service Account        |
+| `src/modules/drive/driveConfigManager.ts`               | File-based Drive config persistence            |
+| `src/routes/setup.route.ts`                             | `POST /api/setup/drive` setup endpoints        |
+| `src/utils/downloadDir.ts`                              | Resolves & ensures the `downloads/` directory  |
+| `src/routes/pdf.route.ts`                               | `GET /pdf/generate` handler                    |
+| `src/routes/markdown.route.ts`                          | `POST /markdown/generate` handler              |
+| `src/middleware/globalErrorHandler.ts`                  | Catches unhandled errors; returns JSON         |
+| `src/middleware/notFound.ts`                            | Returns 404 JSON for unknown routes            |
+| `src/types/index.ts`                                    | Shared TypeScript types                        |
 
 ---
 
@@ -203,6 +215,53 @@ When `save=true` and Google Drive is configured, the response includes:
 
 ---
 
+### `POST /markdown/generate`
+
+Converts a Markdown document to a PDF and saves it to `downloads/`.
+
+**Request body (JSON)** – see the full [body-field reference](#body-field-reference-markdown--pdf) below.
+
+**Success response** `200 OK`
+
+```json
+{
+  "error": false,
+  "message": "PDF generated successfully",
+  "pdfUrl": "/downloads/My-Report-1712345678.pdf"
+}
+```
+
+The optional `drive` object is included when `save: true` and Google Drive is configured (same shape as the web → PDF response above).
+
+**Error response** `400 Bad Request` (validation failure)
+
+```json
+{
+  "error": true,
+  "message": {
+    "markdown": "markdown is required and must be a string"
+  }
+}
+```
+
+**Example cURL**
+
+```bash
+curl -X POST http://localhost:7301/markdown/generate \
+     -H "Content-Type: application/json" \
+     -d '{
+       "markdown": "# Hello World\n\nThis is **bold** and *italic* text.",
+       "title": "My-Report",
+       "size": "A4",
+       "marginTop": 40,
+       "marginRight": 48,
+       "marginBottom": 40,
+       "marginLeft": 48
+     }'
+```
+
+---
+
 ### `GET /downloads/:filename`
 
 Serves generated PDF files as static assets.
@@ -246,6 +305,28 @@ GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&landscape=false&sc
 ```
 GET /pdf/generate?url=https://example.com&id=sess-001&size=A4&save=true
 ```
+
+---
+
+## Body-field reference (Markdown → PDF)
+
+All fields are sent as a JSON body to `POST /markdown/generate`.
+
+| Field               | Type                        | Default        | Description                                                                    |
+| ------------------- | --------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| `markdown`          | `string`                    | **required**   | Raw Markdown text. Maximum 500 KB.                                             |
+| `title`             | `string`                    | `"Document"`   | PDF filename (without extension) and `<title>` tag value.                      |
+| `size`              | `A3\|A4\|A5\|Legal\|Letter` | `A4`           | Paper format                                                                   |
+| `landscape`         | `boolean`                   | `false`        | Landscape orientation                                                          |
+| `scale`             | `number` (70–150)           | `100`          | Rendering scale percentage                                                     |
+| `printBackground`   | `boolean`                   | `true`         | Include CSS backgrounds                                                        |
+| `printHeaderFooter` | `boolean`                   | `false`        | Show title header and page-number footer                                       |
+| `margin`            | `number` ≥ 0                | `0`            | Global margin (px) applied to all sides                                        |
+| `marginTop`         | `number` ≥ 0                | `margin`       | Top margin override (px)                                                       |
+| `marginRight`       | `number` ≥ 0                | `margin`       | Right margin override (px)                                                     |
+| `marginBottom`      | `number` ≥ 0                | `margin`       | Bottom margin override (px)                                                    |
+| `marginLeft`        | `number` ≥ 0                | `margin`       | Left margin override (px)                                                      |
+| `save`              | `boolean`                   | `false`        | Upload the PDF to Google Drive (see [setup guide](docs/GOOGLE_DRIVE_SETUP.md)) |
 
 ---
 
@@ -303,7 +384,8 @@ is enabled and will prompt for the API key when needed.
 ├── downloads/                        # Generated PDFs (git-ignored)
 ├── public/
 │   ├── index.html                    # Landing page
-│   ├── playground.html               # PDF generation playground
+│   ├── playground.html               # Web → PDF playground
+│   ├── markdown-playground.html      # Markdown → PDF playground
 │   └── setup-drive.html              # Google Drive setup wizard (locked after setup)
 └── src/
     ├── index.ts                      # Application entry point
@@ -318,10 +400,14 @@ is enabled and will prompt for the API key when needed.
     │   ├── drive/
     │   │   ├── driveConfigManager.ts  # File-based Drive config read/write
     │   │   └── googleDriveManager.ts  # Google Drive upload helper
+    │   ├── markdown/
+    │   │   ├── markdownToHtml.ts      # Markdown → sanitized HTML conversion
+    │   │   └── generateMarkdownPdf.validation.ts  # Body validation
     │   └── pdf/
     │       └── generatePdf.validation.ts
     ├── routes/
     │   ├── pdf.route.ts
+    │   ├── markdown.route.ts          # POST /markdown/generate
     │   └── setup.route.ts            # Drive setup API (auto-locks)
     ├── types/
     │   └── index.ts
@@ -337,13 +423,14 @@ is enabled and will prompt for the API key when needed.
 The API ships with multiple security layers that can be activated via
 environment variables:
 
-| Feature                 | How to enable                                                  |
-| ----------------------- | -------------------------------------------------------------- |
-| **API key auth**        | Set `API_KEY` env var                                          |
-| **Rate limiting**       | Enabled by default (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MIN`) |
-| **CORS restrictions**   | Set `CORS_ORIGINS` to specific origins                         |
-| **Helmet HTTP headers** | Always on (CSP, HSTS, X-Frame-Options, etc.)                   |
-| **SSRF protection**     | Always on — blocks `localhost`, private IPs, link-local ranges |
+| Feature                        | How to enable                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------- |
+| **API key auth**               | Set `API_KEY` env var                                                           |
+| **Rate limiting**              | Enabled by default (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MIN`)                  |
+| **CORS restrictions**          | Set `CORS_ORIGINS` to specific origins                                          |
+| **Helmet HTTP headers**        | Always on (CSP, HSTS, X-Frame-Options, etc.)                                    |
+| **SSRF protection**            | Always on — blocks `localhost`, private IPs, link-local ranges (web → PDF only) |
+| **Markdown HTML sanitization** | Always on — strips `<script>`, event handlers, and unsafe URIs via sanitize-html |
 
 ---
 

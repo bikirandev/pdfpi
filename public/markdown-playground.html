@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Playground – PDFPi</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2230;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb33;
+            --accent-hover: #79b8ff;
+            --green: #3fb950;
+            --purple: #bc8cff;
+            --yellow: #e3b341;
+            --red: #f85149;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+            --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            --shadow: 0 8px 24px rgba(0, 0, 0, .4);
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        *::-webkit-scrollbar { width: 6px; height: 6px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        *::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(13, 17, 23, .85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .nav-brand span.badge {
+            background: var(--accent);
+            color: #0d1117;
+            font-size: .65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: .9rem;
+            transition: color .15s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        /* MAIN LAYOUT */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: .4rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: .95rem;
+        }
+
+        .method-badge {
+            font-family: var(--mono);
+            font-size: .75rem;
+            background: #1a3a5c;
+            color: #79c0ff;
+            border: 1px solid #1f6feb55;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-weight: 600;
+        }
+
+        /* PLAYGROUND GRID */
+        .playground {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .playground {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface2);
+        }
+
+        .panel-title {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .panel-body {
+            padding: 1.25rem;
+        }
+
+        /* MARKDOWN EDITOR */
+        .editor-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+
+        .tab-btn {
+            padding: .6rem 1.25rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: .85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color .15s, border-color .15s;
+            font-family: var(--font);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-btn:hover:not(.active) { color: var(--text); }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        #markdownInput {
+            width: 100%;
+            min-height: 420px;
+            background: var(--bg);
+            color: var(--text);
+            border: none;
+            padding: 1.25rem;
+            font-family: var(--mono);
+            font-size: .875rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+
+        #htmlPreview {
+            min-height: 420px;
+            padding: 1.25rem;
+            background: #fff;
+            color: #24292f;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: .9rem;
+            line-height: 1.65;
+            overflow-y: auto;
+        }
+
+        #htmlPreview h1, #htmlPreview h2 {
+            border-bottom: 1px solid #d0d7de;
+            padding-bottom: .3em;
+            margin: 1.2em 0 .5em;
+            font-size: 1.3em;
+        }
+        #htmlPreview h3, #htmlPreview h4, #htmlPreview h5, #htmlPreview h6 {
+            margin: 1em 0 .4em;
+        }
+        #htmlPreview p { margin-bottom: .75em; }
+        #htmlPreview code {
+            font-family: var(--mono);
+            font-size: .85em;
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 3px;
+            padding: .1em .35em;
+        }
+        #htmlPreview pre {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: .75em 1em;
+            overflow-x: auto;
+            margin: .75em 0;
+        }
+        #htmlPreview pre code { background: none; border: none; padding: 0; }
+        #htmlPreview blockquote {
+            border-left: 4px solid #d0d7de;
+            padding: .3em 1em;
+            color: #57606a;
+            margin: .75em 0;
+        }
+        #htmlPreview table { border-collapse: collapse; width: 100%; margin: .75em 0; font-size: .875em; }
+        #htmlPreview th, #htmlPreview td { border: 1px solid #d0d7de; padding: .4em .65em; }
+        #htmlPreview thead th { background: #f6f8fa; font-weight: 600; }
+        #htmlPreview ul, #htmlPreview ol { margin: .4em 0 .75em 1.5em; }
+        #htmlPreview li { margin-bottom: .2em; }
+        #htmlPreview a { color: #0969da; }
+        #htmlPreview hr { border: none; border-top: 1px solid #d0d7de; margin: 1em 0; }
+
+        /* OPTIONS PANEL */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-bottom: .4rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .5rem .75rem;
+            font-size: .9rem;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color .15s;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .form-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        .range-display {
+            font-size: .8rem;
+            color: var(--accent);
+            font-weight: 600;
+            font-family: var(--mono);
+            text-align: right;
+            margin-top: .2rem;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin-bottom: .6rem;
+        }
+
+        .toggle-row label {
+            font-size: .875rem;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .margin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .5rem;
+        }
+
+        .margin-item label {
+            font-size: .75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: .2rem;
+            display: block;
+        }
+
+        .margin-item input {
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: .4rem .6rem;
+            font-size: .85rem;
+            font-family: var(--mono);
+            outline: none;
+        }
+
+        .margin-item input:focus { border-color: var(--accent); }
+
+        .divider-sm {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1rem 0;
+        }
+
+        /* API KEY */
+        #apiKeySection {
+            display: none;
+        }
+
+        /* BUTTON */
+        .btn-generate {
+            width: 100%;
+            padding: .75rem;
+            background: var(--accent);
+            color: #0d1117;
+            border: none;
+            border-radius: var(--radius);
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s, transform .1s;
+            font-family: var(--font);
+            margin-top: .25rem;
+        }
+
+        .btn-generate:hover { background: var(--accent-hover); }
+        .btn-generate:active { transform: scale(.98); }
+        .btn-generate:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        /* RESULT */
+        .result-box {
+            margin-top: 1.25rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: none;
+        }
+
+        .result-box.visible { display: block; }
+
+        .result-box.success { border-color: var(--green); }
+        .result-box.error   { border-color: var(--red); }
+
+        .result-status {
+            font-size: .8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .5rem;
+        }
+
+        .result-status.success { color: var(--green); }
+        .result-status.error   { color: var(--red); }
+
+        .result-links {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            margin-top: .6rem;
+        }
+
+        .result-link-row {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .result-link-row a {
+            color: var(--accent);
+            font-size: .85rem;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .result-link-row a:hover { text-decoration: underline; }
+
+        .copy-btn {
+            background: var(--surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: .75rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-family: var(--font);
+            transition: color .15s, border-color .15s;
+        }
+
+        .copy-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+        /* CODE BLOCK */
+        .code-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            font-family: var(--mono);
+            font-size: .8rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            overflow-x: auto;
+            white-space: pre;
+            margin-top: 1rem;
+        }
+
+        .code-block .k { color: #ff7b72; }
+        .code-block .s { color: #a5d6ff; }
+        .code-block .n { color: var(--green); }
+        .code-block .c { color: var(--text-muted); font-style: italic; }
+        .code-block .v { color: var(--yellow); }
+
+        /* SPINNER */
+        .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0,0,0,.3);
+            border-top-color: #0d1117;
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            vertical-align: middle;
+            margin-right: .4rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading .spinner { display: inline-block; }
+
+        /* SECTION LABEL */
+        .section-label {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+            margin-bottom: .75rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .section-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: .82rem;
+            margin-top: 3rem;
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+
+<body>
+    <!-- NAV -->
+    <nav>
+        <a class="nav-brand" href="/">
+            PDFPi
+            <span class="badge">API</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/playground.html">Web → PDF</a></li>
+            <li><a href="/markdown-playground.html" style="color:var(--accent);font-weight:600">Markdown → PDF</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="page-header">
+            <h1>
+                <span class="method-badge">POST</span>
+                /markdown/generate
+            </h1>
+            <p>Convert a Markdown document to a high-fidelity PDF. Paste your Markdown below, configure output options, and click Generate.</p>
+        </div>
+
+        <div class="playground">
+            <!-- LEFT: EDITOR + RESULT -->
+            <div>
+                <div class="panel">
+                    <div class="editor-tabs">
+                        <button class="tab-btn active" onclick="switchTab('editor')">✏️ Markdown Editor</button>
+                        <button class="tab-btn" onclick="switchTab('preview')">👁 Preview</button>
+                    </div>
+
+                    <div id="tab-editor" class="tab-pane active">
+                        <textarea id="markdownInput" placeholder="# Hello World
+
+Write your **Markdown** here.
+
+## Features
+
+- Headings, paragraphs, lists
+- **Bold**, *italic*, ~~strikethrough~~
+- `inline code` and code blocks
+- Tables, blockquotes, images
+- Links and more...
+
+## Code Example
+
+```javascript
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+```
+
+## Table
+
+| Column A | Column B | Column C |
+|----------|----------|----------|
+| Row 1    | Data     | More     |
+| Row 2    | Data     | More     |
+
+> **Note:** This PDF is generated entirely from Markdown — no URL required.
+"></textarea>
+                    </div>
+
+                    <div id="tab-preview" class="tab-pane">
+                        <div id="htmlPreview"></div>
+                    </div>
+                </div>
+
+                <!-- RESULT -->
+                <div class="result-box" id="resultBox">
+                    <div class="result-status" id="resultStatus"></div>
+                    <div id="resultMessage"></div>
+                    <div class="result-links" id="resultLinks"></div>
+                </div>
+
+                <!-- CURL EXAMPLE -->
+                <div class="panel" style="margin-top:1.25rem;">
+                    <div class="panel-header">
+                        <span class="panel-title">⌨️ cURL Example</span>
+                        <button class="copy-btn" onclick="copyCurl()">Copy</button>
+                    </div>
+                    <div class="panel-body" style="padding:0;">
+                        <pre class="code-block" id="curlBlock" style="margin:0;border:none;border-radius:0;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: OPTIONS + GENERATE -->
+            <div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">⚙️ PDF Options</span>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- API Key -->
+                        <div id="apiKeySection">
+                            <div class="section-label">Authentication</div>
+                            <div class="form-group">
+                                <label for="apiKeyInput">API Key</label>
+                                <input type="text" id="apiKeyInput" placeholder="your-api-key" oninput="updateCurl()" />
+                            </div>
+                            <hr class="divider-sm" />
+                        </div>
+
+                        <!-- Title -->
+                        <div class="section-label">Document</div>
+                        <div class="form-group">
+                            <label for="titleInput">Title (filename)</label>
+                            <input type="text" id="titleInput" value="My-Document" oninput="updateCurl()" />
+                        </div>
+
+                        <!-- Paper size -->
+                        <div class="form-group">
+                            <label for="sizeSelect">Paper size</label>
+                            <select id="sizeSelect" onchange="updateCurl()">
+                                <option value="A4" selected>A4</option>
+                                <option value="A3">A3</option>
+                                <option value="A5">A5</option>
+                                <option value="Letter">Letter</option>
+                                <option value="Legal">Legal</option>
+                            </select>
+                        </div>
+
+                        <!-- Scale -->
+                        <div class="form-group">
+                            <label for="scaleRange">Scale: <span id="scaleVal">100</span>%</label>
+                            <input type="range" id="scaleRange" min="70" max="150" value="100" oninput="document.getElementById('scaleVal').textContent=this.value; updateCurl();" />
+                        </div>
+
+                        <hr class="divider-sm" />
+                        <div class="section-label">Rendering</div>
+
+                        <div class="toggle-row">
+                            <input type="checkbox" id="landscapeCheck" onchange="updateCurl()" />
+                            <label for="landscapeCheck">Landscape orientation</label>
+                        </div>
+                        <div class="toggle-row">
+                            <input type="checkbox" id="bgCheck" checked onchange="updateCurl()" />
+                            <label for="bgCheck">Print background</label>
+                        </div>
+                        <div class="toggle-row">
+                            <input type="checkbox" id="hfCheck" onchange="updateCurl()" />
+                            <label for="hfCheck">Header &amp; footer</label>
+                        </div>
+
+                        <hr class="divider-sm" />
+                        <div class="section-label">Margins (px)</div>
+
+                        <div class="margin-grid">
+                            <div class="margin-item">
+                                <label>Top</label>
+                                <input type="number" id="marginTop" min="0" value="40" oninput="updateCurl()" />
+                            </div>
+                            <div class="margin-item">
+                                <label>Right</label>
+                                <input type="number" id="marginRight" min="0" value="48" oninput="updateCurl()" />
+                            </div>
+                            <div class="margin-item">
+                                <label>Bottom</label>
+                                <input type="number" id="marginBottom" min="0" value="40" oninput="updateCurl()" />
+                            </div>
+                            <div class="margin-item">
+                                <label>Left</label>
+                                <input type="number" id="marginLeft" min="0" value="48" oninput="updateCurl()" />
+                            </div>
+                        </div>
+
+                        <!-- Google Drive -->
+                        <div id="driveSection" style="display:none;">
+                            <hr class="divider-sm" />
+                            <div class="section-label">Google Drive</div>
+                            <div class="toggle-row">
+                                <input type="checkbox" id="saveCheck" onchange="updateCurl()" />
+                                <label for="saveCheck">Save to Google Drive</label>
+                            </div>
+                        </div>
+
+                        <hr class="divider-sm" />
+
+                        <button class="btn-generate" id="generateBtn" onclick="generatePdf()">
+                            <span class="spinner" id="spinner"></span>
+                            ▶ Generate PDF
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <strong>PDFPi – Markdown-to-PDF API</strong> &nbsp;·&nbsp;
+            MIT License &nbsp;·&nbsp;
+            <a href="/">Home</a> &nbsp;·&nbsp;
+            <a href="/playground.html">Web → PDF Playground</a>
+        </p>
+    </footer>
+
+    <script>
+        // ── Simple Markdown → HTML preview renderer ──────────────────────────
+        // Lightweight client-side render for the preview tab only.
+        // The actual PDF is generated server-side with the full `marked` library.
+        function simpleMarkdown(md) {
+            return md
+                // code blocks
+                .replace(/```[\w]*\n([\s\S]*?)```/g, (_, c) =>
+                    '<pre><code>' + escHtml(c.trimEnd()) + '</code></pre>')
+                // inline code
+                .replace(/`([^`]+)`/g, (_, c) => '<code>' + escHtml(c) + '</code>')
+                // headings
+                .replace(/^#{6}\s+(.+)$/mg, '<h6>$1</h6>')
+                .replace(/^#{5}\s+(.+)$/mg, '<h5>$1</h5>')
+                .replace(/^#{4}\s+(.+)$/mg, '<h4>$1</h4>')
+                .replace(/^#{3}\s+(.+)$/mg, '<h3>$1</h3>')
+                .replace(/^#{2}\s+(.+)$/mg, '<h2>$1</h2>')
+                .replace(/^#\s+(.+)$/mg, '<h1>$1</h1>')
+                // hr
+                .replace(/^---+$/mg, '<hr />')
+                // blockquote
+                .replace(/^>\s*(.+)$/mg, '<blockquote><p>$1</p></blockquote>')
+                // bold / italic
+                .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/~~(.+?)~~/g, '<del>$1</del>')
+                // links / images
+                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+                // unordered list
+                .replace(/^[\*\-]\s+(.+)$/mg, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, s => '<ul>' + s + '</ul>')
+                // ordered list
+                .replace(/^\d+\.\s+(.+)$/mg, '<li>$1</li>')
+                // paragraphs
+                .replace(/^(?!<[a-z])(.*\S.*)$/mg, '<p>$1</p>');
+        }
+
+        function escHtml(s) {
+            return String(s)
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── State ─────────────────────────────────────────────────────────────
+        let authEnabled = false;
+        let driveEnabled = false;
+
+        // ── Init ──────────────────────────────────────────────────────────────
+        (async () => {
+            try {
+                const [authRes, driveRes] = await Promise.all([
+                    fetch('/api/auth-status'),
+                    fetch('/api/drive-status'),
+                ]);
+                const auth = await authRes.json();
+                const drive = await driveRes.json();
+                authEnabled = !!auth.authEnabled;
+                driveEnabled = !!drive.configured;
+            } catch (_) {}
+
+            if (authEnabled) {
+                document.getElementById('apiKeySection').style.display = 'block';
+            }
+            if (driveEnabled) {
+                document.getElementById('driveSection').style.display = 'block';
+            }
+
+            updateCurl();
+        })();
+
+        // ── Tab switch ────────────────────────────────────────────────────────
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if (tab === 'preview') {
+                document.getElementById('htmlPreview').innerHTML =
+                    simpleMarkdown(document.getElementById('markdownInput').value);
+            }
+        }
+
+        // ── Build options object ──────────────────────────────────────────────
+        function getOptions() {
+            return {
+                title:              document.getElementById('titleInput').value.trim() || 'Document',
+                size:               document.getElementById('sizeSelect').value,
+                scale:              parseInt(document.getElementById('scaleRange').value),
+                landscape:          document.getElementById('landscapeCheck').checked,
+                printBackground:    document.getElementById('bgCheck').checked,
+                printHeaderFooter:  document.getElementById('hfCheck').checked,
+                marginTop:          parseInt(document.getElementById('marginTop').value) || 0,
+                marginRight:        parseInt(document.getElementById('marginRight').value) || 0,
+                marginBottom:       parseInt(document.getElementById('marginBottom').value) || 0,
+                marginLeft:         parseInt(document.getElementById('marginLeft').value) || 0,
+                save:               driveEnabled && document.getElementById('saveCheck').checked,
+            };
+        }
+
+        // ── Update cURL example ───────────────────────────────────────────────
+        function updateCurl() {
+            const opts = getOptions();
+            const apiKey = document.getElementById('apiKeyInput')?.value.trim();
+            const base = window.location.origin;
+            const markdownSnippet = '# Hello World\\n\\nThis is **bold** text.';
+
+            let body = {
+                markdown: markdownSnippet,
+                ...opts,
+            };
+
+            const bodyJson = JSON.stringify(body, null, 2);
+
+            let headers = '-H "Content-Type: application/json"';
+            if (authEnabled && apiKey) {
+                headers += ` \\\n     -H "x-api-key: ${apiKey}"`;
+            }
+
+            document.getElementById('curlBlock').innerHTML =
+                `<span class="k">curl</span> -X POST ${base}<span class="s">/markdown/generate</span> \\\n` +
+                `     ${headers} \\\n` +
+                `     -d '<span class="v">${escHtml(bodyJson)}</span>'`;
+        }
+
+        // ── Copy cURL ─────────────────────────────────────────────────────────
+        function copyCurl() {
+            const text = document.getElementById('curlBlock').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.currentTarget;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+
+        // ── Generate PDF ──────────────────────────────────────────────────────
+        async function generatePdf() {
+            const markdown = document.getElementById('markdownInput').value.trim();
+            if (!markdown) {
+                showResult('error', 'Markdown content is required.');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.classList.add('loading');
+            hideResult();
+
+            const opts = getOptions();
+            const apiKey = document.getElementById('apiKeyInput')?.value.trim();
+
+            const body = { markdown, ...opts };
+
+            const headers = { 'Content-Type': 'application/json' };
+            if (authEnabled && apiKey) {
+                headers['x-api-key'] = apiKey;
+            }
+
+            try {
+                const res = await fetch('/markdown/generate', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(body),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || data.error) {
+                    const msg = typeof data.message === 'object'
+                        ? Object.entries(data.message).map(([k, v]) => `${k}: ${v}`).join('<br>')
+                        : data.message || 'An unknown error occurred.';
+                    showResult('error', msg);
+                    return;
+                }
+
+                const base = window.location.origin;
+                let links = `
+                    <div class="result-link-row">
+                        <a href="${data.pdfUrl}" target="_blank" rel="noopener noreferrer">⬇ Download PDF</a>
+                        <button class="copy-btn" onclick="copyText('${base}${data.pdfUrl}')">Copy URL</button>
+                    </div>`;
+
+                if (data.drive) {
+                    links += `
+                    <div class="result-link-row">
+                        <a href="${data.drive.viewUrl}" target="_blank" rel="noopener noreferrer">☁ View on Google Drive</a>
+                        <button class="copy-btn" onclick="copyText('${data.drive.viewUrl}')">Copy</button>
+                    </div>
+                    <div class="result-link-row">
+                        <a href="${data.drive.downloadUrl}" target="_blank" rel="noopener noreferrer">⬇ Download from Drive</a>
+                        <button class="copy-btn" onclick="copyText('${data.drive.downloadUrl}')">Copy</button>
+                    </div>`;
+                }
+
+                showResult('success', 'PDF generated successfully!', links);
+            } catch (err) {
+                showResult('error', 'Network error. Is the server running?');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+        function showResult(type, message, links = '') {
+            const box = document.getElementById('resultBox');
+            const status = document.getElementById('resultStatus');
+            const msg = document.getElementById('resultMessage');
+            const linksEl = document.getElementById('resultLinks');
+            box.className = 'result-box visible ' + type;
+            status.className = 'result-status ' + type;
+            status.textContent = type === 'success' ? '✓ Success' : '✗ Error';
+            msg.innerHTML = message;
+            linksEl.innerHTML = links;
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideResult() {
+            document.getElementById('resultBox').className = 'result-box';
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.currentTarget;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+    </script>
+</body>
+</html>

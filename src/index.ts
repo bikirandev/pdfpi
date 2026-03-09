@@ -7,6 +7,7 @@ import apiKeyAuth from "./middleware/apiKeyAuth";
 import globalErrorHandler from "./middleware/globalErrorHandler";
 import notFound from "./middleware/notFound";
 import pdfRoute from "./routes/pdf.route";
+import markdownRoute from "./routes/markdown.route";
 import setupRoute from "./routes/setup.route";
 import downloadDir from "./utils/downloadDir";
 import publicDir from "./utils/publicDir";
@@ -89,6 +90,7 @@ app.use("/api/setup", setupRoute);
 
 // API routes (protected by API key when configured)
 app.use("/pdf", apiKeyAuth, pdfRoute);
+app.use("/markdown", apiKeyAuth, markdownRoute);
 
 // 404 handler – must be registered after all routes
 app.use((req: Request, res: Response, next: NextFunction): any =>
