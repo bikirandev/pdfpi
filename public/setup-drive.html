@@ -1,914 +1,1141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Google Drive Setup – PDFPi</title>
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --surface2: #1c2230;
-            --border: #30363d;
-            --accent: #58a6ff;
-            --accent-dim: #1f6feb33;
-            --accent-hover: #79b8ff;
-            --green: #3fb950;
-            --purple: #bc8cff;
-            --yellow: #e3b341;
-            --red: #f85149;
-            --text: #e6edf3;
-            --text-muted: #8b949e;
-            --radius: 8px;
-            --radius-lg: 12px;
-            --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-            --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            --shadow: 0 8px 24px rgba(0, 0, 0, .4);
-        }
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface2: #1c2230;
+        --border: #30363d;
+        --accent: #58a6ff;
+        --accent-dim: #1f6feb33;
+        --accent-hover: #79b8ff;
+        --green: #3fb950;
+        --purple: #bc8cff;
+        --yellow: #e3b341;
+        --red: #f85149;
+        --text: #e6edf3;
+        --text-muted: #8b949e;
+        --radius: 8px;
+        --radius-lg: 12px;
+        --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
 
-        /* ── SCROLLBAR ── */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-        }
+      /* ── SCROLLBAR ── */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
 
-        *::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
+      *::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
 
-        *::-webkit-scrollbar-track {
-            background: transparent;
-        }
+      *::-webkit-scrollbar-track {
+        background: transparent;
+      }
 
-        *::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
+      *::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
 
-        *::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
+      *::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+      }
 
-        html {
-            scroll-behavior: smooth;
-        }
+      html {
+        scroll-behavior: smooth;
+      }
 
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+
+      /* ── NAV ── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(13, 17, 23, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 60px;
+      }
+
+      .nav-brand {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .nav-brand span.badge {
+        background: var(--accent);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1.5rem;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--accent);
+      }
+
+      /* ── LAYOUT ── */
+      .setup-page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .setup-header {
+        margin-bottom: 2rem;
+      }
+
+      .setup-header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.4rem;
+      }
+
+      .setup-header h1 .accent {
+        color: var(--accent);
+      }
+
+      .setup-header p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        max-width: 600px;
+      }
+
+      /* ── PANEL ── */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+      }
+
+      .panel-header {
+        background: var(--surface2);
+        border-bottom: 1px solid var(--border);
+        padding: 0.85rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .panel-dots {
+        display: flex;
+        gap: 5px;
+      }
+
+      .panel-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .panel-dots .d1 {
+        background: var(--red);
+      }
+
+      .panel-dots .d2 {
+        background: var(--yellow);
+      }
+
+      .panel-dots .d3 {
+        background: var(--green);
+      }
+
+      .panel-title {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+
+      .panel-body {
+        padding: 1.25rem;
+      }
+
+      /* ── FORM ── */
+      .field {
+        margin-bottom: 1rem;
+      }
+
+      .field label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.3rem;
+      }
+
+      .field input[type="text"],
+      .field input[type="password"],
+      .field textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 0.55rem 0.8rem;
+        font-size: 0.88rem;
+        font-family: var(--font);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .field textarea {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      .field input:focus,
+      .field textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+      }
+
+      .field-hint {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+      }
+
+      /* ── BUTTONS ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.6rem 1.3rem;
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #000;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px #58a6ff44;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-secondary {
+        background: var(--surface2);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .btn-secondary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      /* ── UPLOAD AREA ── */
+      .upload-area {
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        margin-bottom: 0.5rem;
+      }
+
+      .upload-area:hover {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      .upload-area.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+      }
+
+      .upload-area .icon {
+        font-size: 2rem;
+        opacity: 0.5;
+        display: block;
+        margin-bottom: 0.4rem;
+      }
+
+      .upload-area p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .upload-area p strong {
+        color: var(--accent);
+      }
+
+      .upload-area input[type="file"] {
+        display: none;
+      }
+
+      /* ── STEPS ── */
+      .steps {
+        counter-reset: step;
+        margin-bottom: 1.5rem;
+      }
+
+      .step {
+        counter-increment: step;
+        position: relative;
+        padding-left: 2.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .step::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .step h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+      }
+
+      .step p {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+      }
+
+      .step a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .step a:hover {
+        text-decoration: underline;
+      }
+
+      /* ── STATUS ── */
+      .status-bar {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        display: none;
+      }
+
+      .status-bar.info {
+        display: block;
+        background: #58a6ff15;
+        border: 1px solid #58a6ff33;
+        color: var(--accent);
+      }
+
+      .status-bar.success {
+        display: block;
+        background: #3fb95015;
+        border: 1px solid #3fb95033;
+        color: var(--green);
+      }
+
+      .status-bar.error {
+        display: block;
+        background: #f8514915;
+        border: 1px solid #f8514933;
+        color: var(--red);
+      }
+
+      .status-bar.loading {
+        display: block;
+        background: #e3b34115;
+        border: 1px solid #e3b34133;
+        color: var(--yellow);
+      }
+
+      /* ── LOCKED ── */
+      .locked-overlay {
+        text-align: center;
+        padding: 3rem 2rem;
+      }
+
+      .locked-overlay .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+      }
+
+      .locked-overlay h2 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .locked-overlay p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      /* ── FILE TAG ── */
+      .file-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #3fb95015;
+        border: 1px solid #3fb95033;
+        color: var(--green);
+        padding: 0.3rem 0.7rem;
+        border-radius: var(--radius);
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 0.3rem;
+      }
+
+      .file-tag .remove {
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .file-tag .remove:hover {
+        color: var(--red);
+      }
+
+      /* ── SPINNER ── */
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--border);
+        border-top-color: var(--yellow);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── SECTION DIVIDER ── */
+      .section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        margin: 1.25rem 0 0.6rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 2rem;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-top: 2rem;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* ── HAMBURGER ── */
+      .nav-hamburger {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 201;
+      }
+
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        background: var(--text);
+        border-radius: 2px;
+        transition:
+          transform 0.3s,
+          opacity 0.3s;
+      }
+
+      .nav-hamburger span + span {
+        margin-top: 5px;
+      }
+
+      .nav-hamburger.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .nav-hamburger.open span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .nav-hamburger.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.25);
+        z-index: 149;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
         body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
+          overflow-x: hidden;
         }
 
-        /* ── NAV ── */
-        nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(13, 17, 23, .85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 60px;
-        }
-
-        .nav-brand {
-            font-weight: 700;
-            font-size: 1.05rem;
-            color: var(--text);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .nav-brand span.badge {
-            background: var(--accent);
-            color: #000;
-            font-size: .65rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 999px;
-            letter-spacing: .04em;
+        .nav-hamburger {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
 
         .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 260px;
+          height: 100vh;
+          background: #1e2531;
+          border-left: 1px solid var(--border);
+          flex-direction: column;
+          align-items: stretch;
+          text-align: left;
+          padding: 5rem 1.5rem 2rem;
+          gap: 0;
+          z-index: 150;
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+          overflow-y: auto;
+        }
+
+        .nav-links.open {
+          transform: translateX(0);
+        }
+
+        .nav-links li {
+          border-bottom: 1px solid var(--border);
         }
 
         .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: .9rem;
-            transition: color .2s;
+          display: block;
+          padding: 0.75rem 0;
+          font-size: 1rem;
+          color: var(--text);
         }
-
-        .nav-links a:hover {
-            color: var(--accent);
-        }
-
-        /* ── LAYOUT ── */
-        .setup-page {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .setup-header {
-            margin-bottom: 2rem;
-        }
-
-        .setup-header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -.02em;
-            margin-bottom: .4rem;
-        }
-
-        .setup-header h1 .accent {
-            color: var(--accent);
-        }
-
-        .setup-header p {
-            color: var(--text-muted);
-            font-size: .95rem;
-            max-width: 600px;
-        }
-
-        /* ── PANEL ── */
-        .panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-
-        .panel-header {
-            background: var(--surface2);
-            border-bottom: 1px solid var(--border);
-            padding: .85rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-        }
-
-        .panel-dots {
-            display: flex;
-            gap: 5px;
-        }
-
-        .panel-dots span {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .panel-dots .d1 {
-            background: var(--red);
-        }
-
-        .panel-dots .d2 {
-            background: var(--yellow);
-        }
-
-        .panel-dots .d3 {
-            background: var(--green);
-        }
-
-        .panel-title {
-            font-size: .82rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .panel-body {
-            padding: 1.25rem;
-        }
-
-        /* ── FORM ── */
-        .field {
-            margin-bottom: 1rem;
-        }
-
-        .field label {
-            display: block;
-            font-size: .75rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            margin-bottom: .3rem;
-        }
-
-        .field input[type="text"],
-        .field input[type="password"],
-        .field textarea {
-            width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text);
-            padding: .55rem .8rem;
-            font-size: .88rem;
-            font-family: var(--font);
-            outline: none;
-            transition: border-color .2s;
-        }
-
-        .field textarea {
-            font-family: var(--mono);
-            font-size: .8rem;
-            min-height: 180px;
-            resize: vertical;
-        }
-
-        .field input:focus,
-        .field textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-dim);
-        }
-
-        .field-hint {
-            font-size: .72rem;
-            color: var(--text-muted);
-            margin-top: .2rem;
-        }
-
-        /* ── BUTTONS ── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            padding: .6rem 1.3rem;
-            border-radius: var(--radius);
-            font-size: .9rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all .2s;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px #58a6ff44;
-        }
-
-        .btn-primary:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background: var(--surface2);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            color: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .btn-secondary:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: .75rem;
-            margin-top: .5rem;
-        }
-
-        /* ── UPLOAD AREA ── */
-        .upload-area {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color .2s, background .2s;
-            margin-bottom: .5rem;
-        }
-
-        .upload-area:hover {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-        }
-
-        .upload-area.drag-over {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-        }
-
-        .upload-area .icon {
-            font-size: 2rem;
-            opacity: .5;
-            display: block;
-            margin-bottom: .4rem;
-        }
-
-        .upload-area p {
-            font-size: .85rem;
-            color: var(--text-muted);
-        }
-
-        .upload-area p strong {
-            color: var(--accent);
-        }
-
-        .upload-area input[type="file"] {
-            display: none;
-        }
-
-        /* ── STEPS ── */
-        .steps {
-            counter-reset: step;
-            margin-bottom: 1.5rem;
-        }
-
-        .step {
-            counter-increment: step;
-            position: relative;
-            padding-left: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .step::before {
-            content: counter(step);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 1.75rem;
-            height: 1.75rem;
-            border-radius: 50%;
-            background: var(--accent-dim);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .75rem;
-            font-weight: 700;
-        }
-
-        .step h3 {
-            font-size: .9rem;
-            font-weight: 700;
-            margin-bottom: .2rem;
-        }
-
-        .step p {
-            font-size: .82rem;
-            color: var(--text-muted);
-        }
-
-        .step a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .step a:hover {
-            text-decoration: underline;
-        }
-
-        /* ── STATUS ── */
-        .status-bar {
-            padding: .75rem 1rem;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-            font-size: .85rem;
-            display: none;
-        }
-
-        .status-bar.info {
-            display: block;
-            background: #58a6ff15;
-            border: 1px solid #58a6ff33;
-            color: var(--accent);
-        }
-
-        .status-bar.success {
-            display: block;
-            background: #3fb95015;
-            border: 1px solid #3fb95033;
-            color: var(--green);
-        }
-
-        .status-bar.error {
-            display: block;
-            background: #f8514915;
-            border: 1px solid #f8514933;
-            color: var(--red);
-        }
-
-        .status-bar.loading {
-            display: block;
-            background: #e3b34115;
-            border: 1px solid #e3b34133;
-            color: var(--yellow);
-        }
-
-        /* ── LOCKED ── */
-        .locked-overlay {
-            text-align: center;
-            padding: 3rem 2rem;
-        }
-
-        .locked-overlay .icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: .6;
-        }
-
-        .locked-overlay h2 {
-            font-size: 1.3rem;
-            margin-bottom: .5rem;
-        }
-
-        .locked-overlay p {
-            color: var(--text-muted);
-            font-size: .9rem;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        /* ── FILE TAG ── */
-        .file-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            background: #3fb95015;
-            border: 1px solid #3fb95033;
-            color: var(--green);
-            padding: .3rem .7rem;
-            border-radius: var(--radius);
-            font-size: .8rem;
-            font-weight: 600;
-            margin-top: .3rem;
-        }
-
-        .file-tag .remove {
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: .9rem;
-        }
-
-        .file-tag .remove:hover {
-            color: var(--red);
-        }
-
-        /* ── SPINNER ── */
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--border);
-            border-top-color: var(--yellow);
-            border-radius: 50%;
-            animation: spin .6s linear infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* ── SECTION DIVIDER ── */
-        .section-label {
-            font-size: .72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: var(--text-muted);
-            margin: 1.25rem 0 .6rem;
-            padding-bottom: .4rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* ── FOOTER ── */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: .85rem;
-            margin-top: 2rem;
-        }
-
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 640px) {
-            .nav-links {
-                display: none;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <!-- NAV -->
     <nav>
-        <a class="nav-brand" href="/">
-            PDFPi
-            <span class="badge">API</span>
-        </a>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/playground.html">Playground</a></li>
-            <li><a href="/setup-drive.html" style="color:var(--accent)">Drive Setup</a></li>
-        </ul>
+      <a class="nav-brand" href="/">
+        PDFPi
+        <span class="badge">API</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Home</a></li>
+        <li><a href="/playground.html">Playground</a></li>
+        <li>
+          <a href="/setup-drive.html" style="color: var(--accent)"
+            >Drive Setup</a
+          >
+        </li>
+      </ul>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- LOCKED STATE (hidden by default, shown when already configured) -->
-    <div id="lockedView" style="display:none">
-        <div class="setup-page">
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-dots">
-                        <span class="d1"></span><span class="d2"></span><span class="d3"></span>
-                    </div>
-                    <span class="panel-title">Setup Locked</span>
-                </div>
-                <div class="panel-body">
-                    <div class="locked-overlay">
-                        <div class="icon">&#128274;</div>
-                        <h2>Google Drive Already Configured</h2>
-                        <p>The setup has been completed and is now locked. To reconfigure, delete the config file on the
-                            server and restart.</p>
-                    </div>
-                </div>
+    <div id="lockedView" style="display: none">
+      <div class="setup-page">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-dots">
+              <span class="d1"></span><span class="d2"></span
+              ><span class="d3"></span>
             </div>
+            <span class="panel-title">Setup Locked</span>
+          </div>
+          <div class="panel-body">
+            <div class="locked-overlay">
+              <div class="icon">&#128274;</div>
+              <h2>Google Drive Already Configured</h2>
+              <p>
+                The setup has been completed and is now locked. To reconfigure,
+                delete the config file on the server and restart.
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- SETUP FORM (shown when not yet configured) -->
-    <div id="setupView" style="display:none">
-        <div class="setup-page">
-            <div class="setup-header">
-                <h1>Google Drive <span class="accent">Setup</span></h1>
-                <p>Connect your Google Drive to automatically save generated PDFs. Follow the steps below to complete
-                    the one-time setup.</p>
-            </div>
-
-            <!-- GUIDE STEPS -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-dots">
-                        <span class="d1"></span><span class="d2"></span><span class="d3"></span>
-                    </div>
-                    <span class="panel-title">Quick Setup Guide</span>
-                </div>
-                <div class="panel-body">
-                    <div class="steps">
-                        <div class="step">
-                            <h3>Create a Google Cloud Project</h3>
-                            <p>Go to <a href="https://console.cloud.google.com/" target="_blank"
-                                    rel="noopener noreferrer">Google Cloud Console</a>, create a new project (or select
-                                an existing one).</p>
-                        </div>
-                        <div class="step">
-                            <h3>Enable the Google Drive API</h3>
-                            <p>In the Cloud Console go to <strong>APIs &amp; Services &rarr; Library</strong>, search
-                                for <strong>Google Drive API</strong> and click <strong>Enable</strong>.</p>
-                        </div>
-                        <div class="step">
-                            <h3>Create a Service Account &amp; Download Key</h3>
-                            <p>Go to <strong>APIs &amp; Services &rarr; Credentials &rarr; Create Credentials &rarr;
-                                    Service account</strong>. After creating, open the account, go to the
-                                <strong>Keys</strong> tab &rarr; <strong>Add Key &rarr; JSON</strong>. A
-                                <code>.json</code> file will download.
-                            </p>
-                        </div>
-                        <div class="step">
-                            <h3>Create a Shared Drive &amp; Folder</h3>
-                            <p><strong>Important:</strong> Service accounts cannot store files in regular "My
-                                Drive" folders (no storage quota). You must use a <strong>Shared Drive</strong>.</p>
-                            <p style="margin-top:.3rem">In <a href="https://drive.google.com/" target="_blank"
-                                    rel="noopener noreferrer">Google Drive</a>, go to <strong>Shared
-                                    drives</strong> (left sidebar) &rarr; create or select one. Create a folder
-                                inside. Click <strong>Manage members</strong> on the Shared Drive &rarr;
-                                paste the service account email (from Step 3) &rarr; set role to <strong>Content
-                                    manager</strong>. Open the folder and copy the <strong>Folder ID</strong> from the
-                                URL.</p>
-                            <p style="margin-top:.3rem;font-size:.78rem;color:var(--text-muted)">URL
-                                format: <code>https://drive.google.com/drive/folders/<strong>FOLDER_ID</strong></code>
-                            </p>
-                        </div>
-                        <div class="step">
-                            <h3>Complete the Form Below</h3>
-                            <p>Upload/paste the JSON key and enter the folder ID, then test and save.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CONFIG FORM -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-dots">
-                        <span class="d1"></span><span class="d2"></span><span class="d3"></span>
-                    </div>
-                    <span class="panel-title">Configuration</span>
-                </div>
-                <div class="panel-body">
-                    <div id="statusBar" class="status-bar"></div>
-
-                    <!-- Service Account Key -->
-                    <div class="field">
-                        <label>Service Account Key (JSON) <span style="color:var(--red)">*</span></label>
-                        <div class="upload-area" id="uploadArea">
-                            <span class="icon">&#128194;</span>
-                            <p>Drag &amp; drop the <strong>.json</strong> key file here, or <strong>click to
-                                    browse</strong></p>
-                            <input type="file" id="fileInput" accept=".json,application/json" />
-                        </div>
-                        <div id="fileTag" style="display:none"></div>
-                        <div class="field-hint">Or paste the JSON content below</div>
-                    </div>
-                    <div class="field">
-                        <label for="saKeyText">JSON Key Content</label>
-                        <textarea id="saKeyText"
-                            placeholder='{ "type": "service_account", "project_id": "...", ... }'></textarea>
-                    </div>
-
-                    <div class="section-label">Drive Folder</div>
-
-                    <!-- Folder ID -->
-                    <div class="field">
-                        <label for="folderId">Shared Drive Folder ID <span style="color:var(--red)">*</span></label>
-                        <input id="folderId" type="text" placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ" />
-                        <div class="field-hint">
-                            The folder ID from
-                            <code>https://drive.google.com/drive/folders/<strong>FOLDER_ID</strong></code>
-                            — must be inside a <strong>Shared Drive</strong>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="btn-row">
-                        <button class="btn btn-secondary" id="testBtn" onclick="handleTest()">
-                            &#9889; Test Connection
-                        </button>
-                        <button class="btn btn-primary" id="saveBtn" onclick="handleSave()" disabled>
-                            &#128190; Save Configuration
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div id="setupView" style="display: none">
+      <div class="setup-page">
+        <div class="setup-header">
+          <h1>Google Drive <span class="accent">Setup</span></h1>
+          <p>
+            Connect your Google Drive to automatically save generated PDFs.
+            Follow the steps below to complete the one-time setup.
+          </p>
         </div>
+
+        <!-- GUIDE STEPS -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-dots">
+              <span class="d1"></span><span class="d2"></span
+              ><span class="d3"></span>
+            </div>
+            <span class="panel-title">Quick Setup Guide</span>
+          </div>
+          <div class="panel-body">
+            <div class="steps">
+              <div class="step">
+                <h3>Create a Google Cloud Project</h3>
+                <p>
+                  Go to
+                  <a
+                    href="https://console.cloud.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Google Cloud Console</a
+                  >, create a new project (or select an existing one).
+                </p>
+              </div>
+              <div class="step">
+                <h3>Enable the Google Drive API</h3>
+                <p>
+                  In the Cloud Console go to
+                  <strong>APIs &amp; Services &rarr; Library</strong>, search
+                  for <strong>Google Drive API</strong> and click
+                  <strong>Enable</strong>.
+                </p>
+              </div>
+              <div class="step">
+                <h3>Create a Service Account &amp; Download Key</h3>
+                <p>
+                  Go to
+                  <strong
+                    >APIs &amp; Services &rarr; Credentials &rarr; Create
+                    Credentials &rarr; Service account</strong
+                  >. After creating, open the account, go to the
+                  <strong>Keys</strong> tab &rarr;
+                  <strong>Add Key &rarr; JSON</strong>. A
+                  <code>.json</code> file will download.
+                </p>
+              </div>
+              <div class="step">
+                <h3>Create a Shared Drive &amp; Folder</h3>
+                <p>
+                  <strong>Important:</strong> Service accounts cannot store
+                  files in regular "My Drive" folders (no storage quota). You
+                  must use a <strong>Shared Drive</strong>.
+                </p>
+                <p style="margin-top: 0.3rem">
+                  In
+                  <a
+                    href="https://drive.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Google Drive</a
+                  >, go to <strong>Shared drives</strong> (left sidebar) &rarr;
+                  create or select one. Create a folder inside. Click
+                  <strong>Manage members</strong> on the Shared Drive &rarr;
+                  paste the service account email (from Step 3) &rarr; set role
+                  to <strong>Content manager</strong>. Open the folder and copy
+                  the <strong>Folder ID</strong> from the URL.
+                </p>
+                <p
+                  style="
+                    margin-top: 0.3rem;
+                    font-size: 0.78rem;
+                    color: var(--text-muted);
+                  "
+                >
+                  URL format:
+                  <code
+                    >https://drive.google.com/drive/folders/<strong
+                      >FOLDER_ID</strong
+                    ></code
+                  >
+                </p>
+              </div>
+              <div class="step">
+                <h3>Complete the Form Below</h3>
+                <p>
+                  Upload/paste the JSON key and enter the folder ID, then test
+                  and save.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONFIG FORM -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-dots">
+              <span class="d1"></span><span class="d2"></span
+              ><span class="d3"></span>
+            </div>
+            <span class="panel-title">Configuration</span>
+          </div>
+          <div class="panel-body">
+            <div id="statusBar" class="status-bar"></div>
+
+            <!-- Service Account Key -->
+            <div class="field">
+              <label
+                >Service Account Key (JSON)
+                <span style="color: var(--red)">*</span></label
+              >
+              <div class="upload-area" id="uploadArea">
+                <span class="icon">&#128194;</span>
+                <p>
+                  Drag &amp; drop the <strong>.json</strong> key file here, or
+                  <strong>click to browse</strong>
+                </p>
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept=".json,application/json"
+                />
+              </div>
+              <div id="fileTag" style="display: none"></div>
+              <div class="field-hint">Or paste the JSON content below</div>
+            </div>
+            <div class="field">
+              <label for="saKeyText">JSON Key Content</label>
+              <textarea
+                id="saKeyText"
+                placeholder='{ "type": "service_account", "project_id": "...", ... }'
+              ></textarea>
+            </div>
+
+            <div class="section-label">Drive Folder</div>
+
+            <!-- Folder ID -->
+            <div class="field">
+              <label for="folderId"
+                >Shared Drive Folder ID
+                <span style="color: var(--red)">*</span></label
+              >
+              <input
+                id="folderId"
+                type="text"
+                placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+              />
+              <div class="field-hint">
+                The folder ID from
+                <code
+                  >https://drive.google.com/drive/folders/<strong
+                    >FOLDER_ID</strong
+                  ></code
+                >
+                — must be inside a <strong>Shared Drive</strong>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="btn-row">
+              <button
+                class="btn btn-secondary"
+                id="testBtn"
+                onclick="handleTest()"
+              >
+                &#9889; Test Connection
+              </button>
+              <button
+                class="btn btn-primary"
+                id="saveBtn"
+                onclick="handleSave()"
+                disabled
+              >
+                &#128190; Save Configuration
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- FOOTER -->
     <footer>
-        <p>
-            <strong>PDFPi – Web-to-PDF API</strong> &nbsp;&middot;&nbsp;
-            MIT License &nbsp;&middot;&nbsp;
-            Built with <a href="https://expressjs.com/" target="_blank" rel="noopener noreferrer">Express</a>
-            &amp; <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer">Puppeteer</a>
-        </p>
+      <p>
+        <strong>PDFPi – Web-to-PDF API</strong> &nbsp;&middot;&nbsp; MIT License
+        &nbsp;&middot;&nbsp; Built with
+        <a
+          href="https://expressjs.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Express</a
+        >
+        &amp;
+        <a href="https://pptr.dev/" target="_blank" rel="noopener noreferrer"
+          >Puppeteer</a
+        >
+      </p>
     </footer>
 
     <script>
-        // ── Check if already configured ──
-        (async function init() {
-            try {
-                const res = await fetch('/api/drive-status');
-                const data = await res.json();
-                if (data.configured) {
-                    document.getElementById('lockedView').style.display = 'block';
-                    document.getElementById('setupView').style.display = 'none';
-                } else {
-                    document.getElementById('lockedView').style.display = 'none';
-                    document.getElementById('setupView').style.display = 'block';
-                }
-            } catch {
-                // If endpoint unavailable, show setup form
-                document.getElementById('setupView').style.display = 'block';
-            }
-        })();
-
-        // ── State ──
-        let parsedKey = null;
-        let testPassed = false;
-
-        // ── Elements ──
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const saKeyText = document.getElementById('saKeyText');
-        const folderIdEl = document.getElementById('folderId');
-        const statusBar = document.getElementById('statusBar');
-        const testBtn = document.getElementById('testBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const fileTag = document.getElementById('fileTag');
-
-        // ── File upload / drag-drop ──
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file) loadFile(file);
-        });
-
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (file) loadFile(file);
-        });
-
-        function loadFile(file) {
-            if (!file.name.endsWith('.json')) {
-                showStatus('error', 'Please upload a .json file.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                saKeyText.value = e.target.result;
-                parseKeyInput();
-                if (parsedKey) {
-                    fileTag.style.display = 'block';
-                    fileTag.innerHTML = '<span class="file-tag">' +
-                        '&#128196; ' + file.name +
-                        ' <span class="remove" onclick="clearFile()">&times;</span>' +
-                        '</span>';
-                }
-            };
-            reader.readAsText(file);
+      // ── Check if already configured ──
+      (async function init() {
+        try {
+          const res = await fetch("/api/drive-status");
+          const data = await res.json();
+          if (data.configured) {
+            document.getElementById("lockedView").style.display = "block";
+            document.getElementById("setupView").style.display = "none";
+          } else {
+            document.getElementById("lockedView").style.display = "none";
+            document.getElementById("setupView").style.display = "block";
+          }
+        } catch {
+          // If endpoint unavailable, show setup form
+          document.getElementById("setupView").style.display = "block";
         }
+      })();
 
-        function clearFile() {
-            fileInput.value = '';
-            saKeyText.value = '';
+      // ── State ──
+      let parsedKey = null;
+      let testPassed = false;
+
+      // ── Elements ──
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const saKeyText = document.getElementById("saKeyText");
+      const folderIdEl = document.getElementById("folderId");
+      const statusBar = document.getElementById("statusBar");
+      const testBtn = document.getElementById("testBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const fileTag = document.getElementById("fileTag");
+
+      // ── File upload / drag-drop ──
+      uploadArea.addEventListener("click", () => fileInput.click());
+
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("drag-over");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("drag-over");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("drag-over");
+        const file = e.dataTransfer.files[0];
+        if (file) loadFile(file);
+      });
+
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (file) loadFile(file);
+      });
+
+      function loadFile(file) {
+        if (!file.name.endsWith(".json")) {
+          showStatus("error", "Please upload a .json file.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          saKeyText.value = e.target.result;
+          parseKeyInput();
+          if (parsedKey) {
+            fileTag.style.display = "block";
+            fileTag.innerHTML =
+              '<span class="file-tag">' +
+              "&#128196; " +
+              file.name +
+              ' <span class="remove" onclick="clearFile()">&times;</span>' +
+              "</span>";
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function clearFile() {
+        fileInput.value = "";
+        saKeyText.value = "";
+        parsedKey = null;
+        testPassed = false;
+        saveBtn.disabled = true;
+        fileTag.style.display = "none";
+        fileTag.innerHTML = "";
+      }
+
+      // ── Parse key from textarea ──
+      saKeyText.addEventListener("input", () => {
+        parseKeyInput();
+        testPassed = false;
+        saveBtn.disabled = true;
+      });
+
+      folderIdEl.addEventListener("input", () => {
+        testPassed = false;
+        saveBtn.disabled = true;
+      });
+
+      function parseKeyInput() {
+        const raw = saKeyText.value.trim();
+        if (!raw) {
+          parsedKey = null;
+          return;
+        }
+        try {
+          const obj = JSON.parse(raw);
+          if (!obj.client_email) {
+            showStatus(
+              "error",
+              'JSON is missing "client_email" field. Is this the right file?',
+            );
             parsedKey = null;
+            return;
+          }
+          parsedKey = obj;
+          showStatus(
+            "info",
+            "Service account: <strong>" + obj.client_email + "</strong>",
+          );
+        } catch {
+          parsedKey = null;
+          showStatus("error", "Invalid JSON — please check the content.");
+        }
+      }
+
+      // ── Test Connection ──
+      async function handleTest() {
+        parseKeyInput();
+        if (!parsedKey) {
+          showStatus(
+            "error",
+            "Please provide a valid service account JSON key.",
+          );
+          return;
+        }
+        const folderId = folderIdEl.value.trim();
+        if (!folderId) {
+          showStatus("error", "Please enter the Google Drive Folder ID.");
+          return;
+        }
+
+        testBtn.disabled = true;
+        testBtn.innerHTML = '<span class="spinner"></span> Testing…';
+        showStatus("loading", "Testing connection to Google Drive…");
+
+        try {
+          const res = await fetch("/api/setup/drive/test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ serviceAccountKey: parsedKey, folderId }),
+          });
+          const data = await res.json();
+          if (data.error) {
+            showStatus("error", data.message);
             testPassed = false;
-            saveBtn.disabled = true;
-            fileTag.style.display = 'none';
-            fileTag.innerHTML = '';
+          } else {
+            showStatus(
+              "success",
+              "Connection successful! Folder ID: <strong>" +
+                folderId +
+                "</strong>",
+            );
+            testPassed = true;
+            saveBtn.disabled = false;
+          }
+        } catch {
+          showStatus("error", "Network error — is the server running?");
+          testPassed = false;
+        } finally {
+          testBtn.disabled = false;
+          testBtn.innerHTML = "&#9889; Test Connection";
         }
+      }
 
-        // ── Parse key from textarea ──
-        saKeyText.addEventListener('input', () => {
-            parseKeyInput();
-            testPassed = false;
-            saveBtn.disabled = true;
-        });
-
-        folderIdEl.addEventListener('input', () => {
-            testPassed = false;
-            saveBtn.disabled = true;
-        });
-
-        function parseKeyInput() {
-            const raw = saKeyText.value.trim();
-            if (!raw) { parsedKey = null; return; }
-            try {
-                const obj = JSON.parse(raw);
-                if (!obj.client_email) {
-                    showStatus('error', 'JSON is missing "client_email" field. Is this the right file?');
-                    parsedKey = null;
-                    return;
-                }
-                parsedKey = obj;
-                showStatus('info', 'Service account: <strong>' + obj.client_email + '</strong>');
-            } catch {
-                parsedKey = null;
-                showStatus('error', 'Invalid JSON — please check the content.');
-            }
+      // ── Save Configuration ──
+      async function handleSave() {
+        if (!testPassed) {
+          showStatus("error", "Please test the connection first.");
+          return;
         }
+        const folderId = folderIdEl.value.trim();
 
-        // ── Test Connection ──
-        async function handleTest() {
-            parseKeyInput();
-            if (!parsedKey) {
-                showStatus('error', 'Please provide a valid service account JSON key.');
-                return;
-            }
-            const folderId = folderIdEl.value.trim();
-            if (!folderId) {
-                showStatus('error', 'Please enter the Google Drive Folder ID.');
-                return;
-            }
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
+        showStatus("loading", "Saving configuration…");
 
-            testBtn.disabled = true;
-            testBtn.innerHTML = '<span class="spinner"></span> Testing…';
-            showStatus('loading', 'Testing connection to Google Drive…');
-
-            try {
-                const res = await fetch('/api/setup/drive/test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceAccountKey: parsedKey, folderId }),
-                });
-                const data = await res.json();
-                if (data.error) {
-                    showStatus('error', data.message);
-                    testPassed = false;
-                } else {
-                    showStatus('success',
-                        'Connection successful! Folder ID: <strong>' + folderId + '</strong>');
-                    testPassed = true;
-                    saveBtn.disabled = false;
-                }
-            } catch {
-                showStatus('error', 'Network error — is the server running?');
-                testPassed = false;
-            } finally {
-                testBtn.disabled = false;
-                testBtn.innerHTML = '&#9889; Test Connection';
-            }
+        try {
+          const res = await fetch("/api/setup/drive", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ serviceAccountKey: parsedKey, folderId }),
+          });
+          const data = await res.json();
+          if (data.error) {
+            showStatus("error", data.message);
+            saveBtn.disabled = false;
+          } else {
+            showStatus(
+              "success",
+              "Configuration saved! This setup page is now locked. Redirecting…",
+            );
+            setTimeout(() => {
+              document.getElementById("setupView").style.display = "none";
+              document.getElementById("lockedView").style.display = "block";
+            }, 2000);
+          }
+        } catch {
+          showStatus("error", "Network error — failed to save.");
+          saveBtn.disabled = false;
+        } finally {
+          saveBtn.innerHTML = "&#128190; Save Configuration";
         }
+      }
 
-        // ── Save Configuration ──
-        async function handleSave() {
-            if (!testPassed) {
-                showStatus('error', 'Please test the connection first.');
-                return;
-            }
-            const folderId = folderIdEl.value.trim();
-
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
-            showStatus('loading', 'Saving configuration…');
-
-            try {
-                const res = await fetch('/api/setup/drive', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceAccountKey: parsedKey, folderId }),
-                });
-                const data = await res.json();
-                if (data.error) {
-                    showStatus('error', data.message);
-                    saveBtn.disabled = false;
-                } else {
-                    showStatus('success',
-                        'Configuration saved! This setup page is now locked. Redirecting…');
-                    setTimeout(() => {
-                        document.getElementById('setupView').style.display = 'none';
-                        document.getElementById('lockedView').style.display = 'block';
-                    }, 2000);
-                }
-            } catch {
-                showStatus('error', 'Network error — failed to save.');
-                saveBtn.disabled = false;
-            } finally {
-                saveBtn.innerHTML = '&#128190; Save Configuration';
-            }
-        }
-
-        // ── Status display ──
-        function showStatus(type, message) {
-            statusBar.className = 'status-bar ' + type;
-            const icons = { info: '&#8505; ', success: '&#10003; ', error: '&#10007; ', loading: '<span class="spinner"></span> ' };
-            statusBar.innerHTML = (icons[type] || '') + message;
-        }
+      // ── Status display ──
+      function showStatus(type, message) {
+        statusBar.className = "status-bar " + type;
+        const icons = {
+          info: "&#8505; ",
+          success: "&#10003; ",
+          error: "&#10007; ",
+          loading: '<span class="spinner"></span> ',
+        };
+        statusBar.innerHTML = (icons[type] || "") + message;
+      }
     </script>
-</body>
-
+    <script>
+      (function () {
+        const hamburger = document.getElementById("navHamburger");
+        const navLinks = document.getElementById("navLinks");
+        const overlay = document.getElementById("sidebarOverlay");
+        function closeSidebar() {
+          hamburger.classList.remove("open");
+          navLinks.classList.remove("open");
+          overlay.classList.remove("open");
+        }
+        hamburger.addEventListener("click", function () {
+          const isOpen = navLinks.classList.toggle("open");
+          hamburger.classList.toggle("open", isOpen);
+          overlay.classList.toggle("open", isOpen);
+        });
+        overlay.addEventListener("click", closeSidebar);
+        navLinks.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", closeSidebar);
+        });
+      })();
+    </script>
+  </body>
 </html>

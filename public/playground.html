@@ -602,10 +602,99 @@
         padding: 1.5rem;
       }
 
+      /* ── HAMBURGER ── */
+      .nav-hamburger {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        z-index: 201;
+      }
+
+      .nav-hamburger span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        background: var(--text);
+        border-radius: 2px;
+        transition:
+          transform 0.3s,
+          opacity 0.3s;
+      }
+
+      .nav-hamburger span + span {
+        margin-top: 5px;
+      }
+
+      .nav-hamburger.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .nav-hamburger.open span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .nav-hamburger.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.25);
+        z-index: 149;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
       /* ── RESPONSIVE ── */
-      @media (max-width: 640px) {
+      @media (max-width: 768px) {
+        body {
+          overflow-x: hidden;
+        }
+
+        .nav-hamburger {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
         .nav-links {
-          display: none;
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 260px;
+          height: 100vh;
+          background: #1e2531;
+          border-left: 1px solid var(--border);
+          flex-direction: column;
+          align-items: stretch;
+          text-align: left;
+          padding: 5rem 1.5rem 2rem;
+          gap: 0;
+          z-index: 150;
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+          overflow-y: auto;
+        }
+
+        .nav-links.open {
+          transform: translateX(0);
+        }
+
+        .nav-links li {
+          border-bottom: 1px solid var(--border);
+        }
+
+        .nav-links a {
+          display: block;
+          padding: 0.75rem 0;
+          font-size: 1rem;
+          color: var(--text);
         }
       }
 
@@ -654,14 +743,18 @@
         PDFPi
         <span class="badge">API</span>
       </a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="navLinks">
         <li><a href="/">Home</a></li>
         <li>
           <a href="/playground.html" style="color: var(--accent)">Playground</a>
         </li>
         <li><a href="/setup-drive.html">Drive Setup</a></li>
       </ul>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="playground">
       <!-- HEADER -->
@@ -1225,6 +1318,27 @@
 
         updatePreview();
       }
+    </script>
+    <script>
+      (function () {
+        const hamburger = document.getElementById("navHamburger");
+        const navLinks = document.getElementById("navLinks");
+        const overlay = document.getElementById("sidebarOverlay");
+        function closeSidebar() {
+          hamburger.classList.remove("open");
+          navLinks.classList.remove("open");
+          overlay.classList.remove("open");
+        }
+        hamburger.addEventListener("click", function () {
+          const isOpen = navLinks.classList.toggle("open");
+          hamburger.classList.toggle("open", isOpen);
+          overlay.classList.toggle("open", isOpen);
+        });
+        overlay.addEventListener("click", closeSidebar);
+        navLinks.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", closeSidebar);
+        });
+      })();
     </script>
   </body>
 </html>
