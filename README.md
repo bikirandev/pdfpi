@@ -480,7 +480,7 @@ MIT License - see the [LICENSE](https://github.com/bikirandev/pdfpi/blob/master/
 
 <div align="center">
 
-**Made with ❤️ for the React community**
+**Made with ❤️ for the Node.js community**
 
 [⭐ Star this repo](https://github.com/bikirandev/pdfpi) • [🐛 Report Bug](https://github.com/bikirandev/pdfpi/issues) • [💡 Request Feature](https://github.com/bikirandev/pdfpi/issues/new)
 
